@@ -1,6 +1,8 @@
 package com.wachin.model;
 
-public abstract class Entidad {
+import com.wachin.interfaces.Atacable;
+
+public abstract class Entidad implements Atacable {
 
     private String nombre;
     private int vida;
@@ -36,5 +38,14 @@ public abstract class Entidad {
 
     public void setDano(int dano) {
         this.dano = dano;
+    }
+
+    @Override
+    public void recibirDano(int dano) {
+        this.vida -= dano;
+
+        if (this.vida < 0) {
+            this.vida = 0;
+        }
     }
 }
