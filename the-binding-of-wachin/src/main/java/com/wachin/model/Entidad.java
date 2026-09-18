@@ -1,5 +1,40 @@
 package com.wachin.model;
 
-public class Entidad {
-    
+public abstract class Entidad {
+
+    private String nombre;
+    private int vida;
+    private int vidaMaxima;
+    private int dano;
+
+    public Entidad(String nombre, int vidaMaxima, int dano) {
+        this.nombre = nombre;
+        this.vidaMaxima = vidaMaxima;
+        this.vida = vidaMaxima;
+        this.dano = dano;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public int getVida() {
+        return vida;
+    }
+
+    public int getVidaMaxima() {
+        return vidaMaxima;
+    }
+
+    public int getDano() {
+        return dano;
+    }
+
+    public void setDano(int dano) {
+        this.dano = dano;
+    }
 }
