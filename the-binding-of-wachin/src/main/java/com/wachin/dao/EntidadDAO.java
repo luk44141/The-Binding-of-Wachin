@@ -1,7 +1,8 @@
 package com.wachin.dao;
 
-import com.wachin.model.Entidad;
 import java.util.List;
+
+import com.wachin.model.Entidad;
 
 public interface EntidadDAO {
 
@@ -15,3 +16,4 @@ public interface EntidadDAO {
 
     void eliminar(int id);
 }
+ 

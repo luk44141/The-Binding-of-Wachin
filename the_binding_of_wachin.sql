@@ -1,65 +1,15 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Servidor: 127.0.0.1
--- Tiempo de generación: 14-09-2026 a las 16:27:51
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+CREATE TABLE Entidades (
+    id INT NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL,
+    vida INT NOT NULL,
+    vida_max INT NOT NULL,
+    dano INT NOT NULL,
+    tipo VARCHAR(20) NOT NULL,
+    experiencia INT NOT NULL DEFAULT 0,
+    nivel INT NOT NULL DEFAULT 1,
+    monedas INT NOT NULL DEFAULT 0,
+    energia INT NOT NULL DEFAULT 0,
+    energia_maxima INT NOT NULL DEFAULT 0,
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Base de datos: `the_binding_of_wachin`
---
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `jugadores`
---
-
-CREATE TABLE `jugadores` (
-  `id` int(11) NOT NULL,
-  `nombre` varchar(50) NOT NULL,
-  `vida` int(11) NOT NULL,
-  `vida_maxima` int(11) NOT NULL,
-  `nivel` int(11) NOT NULL,
-  `experiencia` int(11) NOT NULL,
-  `monedas` int(11) NOT NULL,
-  `energia` int(11) NOT NULL,
-  `energia_maxima` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Índices para tablas volcadas
---
-
---
--- Indices de la tabla `jugadores`
---
-ALTER TABLE `jugadores`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `jugadores`
---
-ALTER TABLE `jugadores`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+    PRIMARY KEY (id)
+);
