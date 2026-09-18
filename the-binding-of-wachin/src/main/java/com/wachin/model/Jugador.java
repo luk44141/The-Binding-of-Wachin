@@ -1,5 +1,8 @@
 package com.wachin.model;
 
+import com.wachin.exception.EnergiaInsuficienteException;
+import com.wachin.exception.ExperienciaInsuficienteException;
+
 public class Jugador extends Entidad {
 
     private int experiencia;
@@ -36,6 +39,46 @@ public class Jugador extends Entidad {
 
     public int getEnergiaMaxima() {
         return energiaMaxima;
+    }
+
+    public void ganarExperiencia(int cantidad) {
+        if (cantidad > 0) {
+            experiencia += cantidad;
+        }
+    }
+
+    public void subirNivel(int experienciaNecesaria)
+            throws ExperienciaInsuficienteException {
+
+        if (experiencia < experienciaNecesaria) {
+            throw new ExperienciaInsuficienteException(
+                "No hay suficiente experiencia para subir de nivel."
+            );
+        }
+
+        nivel++;
+        experiencia -= experienciaNecesaria;
+    }
+
+    public void gastarEnergia(int cantidad)
+            throws EnergiaInsuficienteException {
+
+        if (cantidad > energia) {
+            throw new EnergiaInsuficienteException(
+                "No hay suficiente energía para realizar esta acción."
+            );
+        }
+
+        energia -= cantidad;
+    }
+
+    public void recuperarEnergia(int cantidad) {
+
+        energia += cantidad;
+
+        if (energia > energiaMaxima) {
+            energia = energiaMaxima;
+        }
     }
 
     @Override
