@@ -18,10 +18,16 @@ public class JuegoService {
 
     private Jefe jefe;
 
+    private boolean partidaTerminada;
+    private boolean partidaGanada;
+
     public JuegoService() {
 
         enemigos = new ArrayList<>();
         invocacionesActivas = new ArrayList<>();
+
+        partidaTerminada = false;
+        partidaGanada = false;
     }
 
     public void iniciarPartida(Jugador jugador) {
@@ -30,7 +36,11 @@ public class JuegoService {
 
         enemigos.clear();
         invocacionesActivas.clear();
+
         jefe = null;
+
+        partidaTerminada = false;
+        partidaGanada = false;
     }
 
     public Jugador getJugador() {
@@ -80,7 +90,8 @@ public class JuegoService {
 
     public boolean jugadorEstaVivo() {
 
-        return jugador != null && jugador.getVida() > 0;
+        return jugador != null &&
+               jugador.getVida() > 0;
     }
 
     public boolean hayEnemigos() {
@@ -93,17 +104,45 @@ public class JuegoService {
         return enemigos.isEmpty() && jefe == null;
     }
 
-    public void eliminarEntidadesDerrotadas() {
+    public void verificarEstado() {
 
-        enemigos.removeIf(enemigo -> enemigo.getVida() <= 0);
-
-        if (jefe != null && jefe.getVida() <= 0) {
-            jefe = null;
+        if (!jugadorEstaVivo()) {
+            partidaTerminada = true;
+            partidaGanada = false;
+            return;
         }
 
-        invocacionesActivas.removeIf(
-                invocacion -> invocacion.getVida() <= 0
-        );
+        if (salaCompletada()) {
+            partidaTerminada = true;
+            partidaGanada = true;
+        }
+    }
+
+    public boolean isPartidaTerminada() {
+        return partidaTerminada;
+    }
+
+    public boolean isPartidaGanada() {
+        return partidaGanada;
+    }
+
+    public void derrotarEnemigo(
+            Enemigo enemigo,
+            JugadorService jugadorService) {
+
+        if (enemigo == null || jugador == null) {
+            return;
+        }
+
+        if (enemigo.getVida() <= 0) {
+
+            enemigos.remove(enemigo);
+
+            jugadorService.ganarExperiencia(
+                    jugador,
+                    25
+            );
+        }
     }
 
     public List<Entidad> obtenerEntidadesActivas() {
