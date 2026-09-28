@@ -1,6 +1,9 @@
 package com.wachin.dao;
 
 import com.wachin.model.Entidad;
+import com.wachin.model.Jugador;
+import com.wachin.model.Enemigo;
+import com.wachin.model.Invocacion;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +17,9 @@ public class EntidadDAOImpl implements EntidadDAO {
     @Override
     public void guardar(Entidad entidad) {
 
-        String sql = "INSERT INTO Entidades (nombre, vida, vida_max, dano, tipo) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Entidades " +
+                "(nombre, vida, vida_max, dano, tipo) " +
+                "VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conexion = ConexionBD.conectar();
              PreparedStatement ps = conexion.prepareStatement(sql)) {
@@ -42,20 +47,14 @@ public class EntidadDAOImpl implements EntidadDAO {
 
             ps.setInt(1, id);
 
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
 
-            if (rs.next()) {
-                return new Entidad(
-                        rs.getInt("id"),
-                        rs.getString("nombre"),
-                        rs.getInt("vida"),
-                        rs.getInt("vida_max"),
-                        rs.getInt("dano"),
-                        rs.getString("tipo")
-                );
+                if (rs.next()) {
+                    return convertirEntidad(rs);
+                }
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println("Error al buscar entidad: " + e.getMessage());
         }
 
@@ -74,30 +73,70 @@ public class EntidadDAOImpl implements EntidadDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
+                Entidad entidad = convertirEntidad(rs);
 
-                Entidad entidad = new Entidad(
-                        rs.getInt("id"),
-                        rs.getString("nombre"),
-                        rs.getInt("vida"),
-                        rs.getInt("vida_max"),
-                        rs.getInt("dano"),
-                        rs.getString("tipo")
-                );
-
-                entidades.add(entidad);
+                if (entidad != null) {
+                    entidades.add(entidad);
+                }
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println("Error al listar entidades: " + e.getMessage());
         }
 
         return entidades;
     }
 
+    private Entidad convertirEntidad(ResultSet rs) throws Exception {
+
+        String tipo = rs.getString("tipo");
+
+        switch (tipo) {
+
+            case "JUGADOR":
+                return new Jugador(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getInt("vida"),
+                        rs.getInt("vida_max"),
+                        rs.getInt("dano"),
+                        rs.getInt("experiencia"),
+                        rs.getInt("nivel"),
+                        rs.getInt("monedas"),
+                        rs.getInt("energia"),
+                        rs.getInt("energia_maxima")
+                );
+
+            case "ENEMIGO":
+                return new Enemigo(
+                        rs.getString("nombre"),
+                        rs.getInt("vida_max"),
+                        rs.getInt("dano"),
+                        "NORMAL",
+                        1.0
+                );
+
+            case "INVOCACION":
+                return new Invocacion(
+                        rs.getString("nombre"),
+                        rs.getInt("vida_max"),
+                        rs.getInt("dano"),
+                        10,
+                        10
+                );
+
+            default:
+                System.out.println("Tipo de entidad desconocido: " + tipo);
+                return null;
+        }
+    }
+
     @Override
     public void actualizar(Entidad entidad) {
 
-        String sql = "UPDATE Entidades SET nombre = ?, vida = ?, vida_max = ?, dano = ?, tipo = ? WHERE id = ?";
+        String sql = "UPDATE Entidades SET " +
+                "nombre = ?, vida = ?, vida_max = ?, dano = ?, tipo = ? " +
+                "WHERE id = ?";
 
         try (Connection conexion = ConexionBD.conectar();
              PreparedStatement ps = conexion.prepareStatement(sql)) {
@@ -125,7 +164,6 @@ public class EntidadDAOImpl implements EntidadDAO {
              PreparedStatement ps = conexion.prepareStatement(sql)) {
 
             ps.setInt(1, id);
-
             ps.executeUpdate();
 
         } catch (SQLException e) {

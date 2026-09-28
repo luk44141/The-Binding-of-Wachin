@@ -1,7 +1,10 @@
 package com.wachin.model;
 
+import com.wachin.exception.DanoInvalidoException;
 import com.wachin.exception.EnergiaInsuficienteException;
 import com.wachin.exception.ExperienciaInsuficienteException;
+import com.wachin.exception.NombreInvalidoException;
+import com.wachin.exception.VidaInvalidaException;
 
 public class Jugador extends Entidad {
 
@@ -11,7 +14,9 @@ public class Jugador extends Entidad {
     private int energia;
     private int energiaMaxima;
 
-    public Jugador(String nombre, int vidaMaxima, int dano, int energiaMaxima) {
+    public Jugador(String nombre, int vidaMaxima, int dano, int energiaMaxima)
+            throws NombreInvalidoException, VidaInvalidaException, DanoInvalidoException {
+
         super(nombre, vidaMaxima, dano);
 
         this.experiencia = 0;
@@ -19,6 +24,20 @@ public class Jugador extends Entidad {
         this.monedas = 0;
         this.energiaMaxima = energiaMaxima;
         this.energia = energiaMaxima;
+    }
+
+    public Jugador(int id, String nombre, int vida, int vidaMaxima,
+                   int dano, int experiencia, int nivel,
+                   int monedas, int energia, int energiaMaxima)
+            throws NombreInvalidoException, VidaInvalidaException, DanoInvalidoException {
+
+        super(id, nombre, vida, vidaMaxima, dano, "JUGADOR");
+
+        this.experiencia = experiencia;
+        this.nivel = nivel;
+        this.monedas = monedas;
+        this.energia = energia;
+        this.energiaMaxima = energiaMaxima;
     }
 
     public int getExperiencia() {
@@ -73,7 +92,6 @@ public class Jugador extends Entidad {
     }
 
     public void recuperarEnergia(int cantidad) {
-
         energia += cantidad;
 
         if (energia > energiaMaxima) {
@@ -82,7 +100,7 @@ public class Jugador extends Entidad {
     }
 
     @Override
-    public void atacar(Entidad objetivo) throws Exception {
+    public void atacar(Entidad objetivo) {
         objetivo.recibirDano(getDano());
     }
 }

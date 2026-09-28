@@ -1,5 +1,9 @@
 package com.wachin.model;
 
+import com.wachin.exception.DanoInvalidoException;
+import com.wachin.exception.NombreInvalidoException;
+import com.wachin.exception.VidaInvalidaException;
+
 public class Jefe extends Enemigo {
 
     private int nivelJefe;
@@ -8,13 +12,15 @@ public class Jefe extends Enemigo {
 
     public Jefe(String nombre, int vidaMaxima, int dano,
                 String tipoEnemigo, double velocidad,
-                int nivelJefe, String ataqueEspecial, int danoAdicional) {
+                int nivelJefe, String ataqueEspecial, int danoAdicional)
+            throws NombreInvalidoException, VidaInvalidaException, DanoInvalidoException {
 
         super(nombre, vidaMaxima, dano, tipoEnemigo, velocidad);
 
         this.nivelJefe = nivelJefe;
         this.ataqueEspecial = ataqueEspecial;
         this.danoAdicional = danoAdicional;
+        setTipo("JEFE");
     }
 
     public int getNivelJefe() {
@@ -29,7 +35,7 @@ public class Jefe extends Enemigo {
         return danoAdicional;
     }
 
-    public void ataqueEspecial(Entidad objetivo) throws Exception {
+    public void ataqueEspecial(Entidad objetivo) {
         int danoTotal = getDano() + danoAdicional;
         objetivo.recibirDano(danoTotal);
     }

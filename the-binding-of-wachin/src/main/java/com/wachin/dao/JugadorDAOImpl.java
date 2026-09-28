@@ -49,25 +49,25 @@ public class JugadorDAOImpl implements JugadorDAO {
 
             ps.setInt(1, id);
 
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
 
-            if (rs.next()) {
-
-                return new Jugador(
-                        rs.getInt("id"),
-                        rs.getString("nombre"),
-                        rs.getInt("vida"),
-                        rs.getInt("vida_max"),
-                        rs.getInt("dano"),
-                        rs.getInt("experiencia"),
-                        rs.getInt("nivel"),
-                        rs.getInt("monedas"),
-                        rs.getInt("energia"),
-                        rs.getInt("energia_maxima")
-                );
+                if (rs.next()) {
+                    return new Jugador(
+                            rs.getInt("id"),
+                            rs.getString("nombre"),
+                            rs.getInt("vida"),
+                            rs.getInt("vida_max"),
+                            rs.getInt("dano"),
+                            rs.getInt("experiencia"),
+                            rs.getInt("nivel"),
+                            rs.getInt("monedas"),
+                            rs.getInt("energia"),
+                            rs.getInt("energia_maxima")
+                    );
+                }
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println("Error al buscar jugador: " + e.getMessage());
         }
 
@@ -103,7 +103,7 @@ public class JugadorDAOImpl implements JugadorDAO {
                 jugadores.add(jugador);
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println("Error al listar jugadores: " + e.getMessage());
         }
 
@@ -149,7 +149,6 @@ public class JugadorDAOImpl implements JugadorDAO {
              PreparedStatement ps = conexion.prepareStatement(sql)) {
 
             ps.setInt(1, id);
-
             ps.executeUpdate();
 
         } catch (SQLException e) {
