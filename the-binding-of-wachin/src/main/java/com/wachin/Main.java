@@ -8,7 +8,9 @@ public class Main {
     public static void main(String[] args) {
 
         try (Connection conexion = ConexionBD.conectar()) {
-            System.out.println("Conexion con MySQL exitosa.");
+            if (conexion != null && !conexion.isClosed()) {
+                System.out.println("Conexion con MySQL exitosa.");
+            }
         } catch (Exception e) {
             System.out.println("Error al conectar con MySQL.");
             e.printStackTrace();
