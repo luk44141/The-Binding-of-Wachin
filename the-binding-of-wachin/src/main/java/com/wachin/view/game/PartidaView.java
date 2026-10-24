@@ -1,3 +1,4 @@
+
 package com.wachin.view.game;
 
 import com.wachin.model.Jugador;
@@ -16,6 +17,7 @@ import javafx.scene.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class PartidaView {
 
@@ -24,11 +26,8 @@ public class PartidaView {
 
     private final Pane raiz = new Pane();
 
-    private final Rectangle fondo =
-            new Rectangle(0, 0, ANCHO, ALTO);
-
-    private final Rectangle salaVisual =
-            new Rectangle(50, 50, 900, 600);
+    private final Rectangle fondo = new Rectangle(0, 0, ANCHO, ALTO);
+    private final Rectangle salaVisual = new Rectangle(50, 50, 900, 600);
 
     private final Text vidaTexto = crearTexto(20, 682);
     private final Text experienciaTexto = crearTexto(185, 682);
@@ -39,8 +38,7 @@ public class PartidaView {
     private final Text dificultadTexto = crearTexto(865, 682);
     private final Text estadoTexto = crearTexto(300, 95);
 
-    private final List<PuertaVisual> puertas =
-            new ArrayList<>();
+    private final List<PuertaVisual> puertas = new ArrayList<>();
 
     private StackPane menuPausa;
 
@@ -61,8 +59,8 @@ public class PartidaView {
     }
 
     private void crearPuertas() {
-        for (PuertaVisual.Direccion direccion
-                : PuertaVisual.Direccion.values()) {
+        for (PuertaVisual.Direccion direccion :
+                PuertaVisual.Direccion.values()) {
 
             PuertaVisual puerta = new PuertaVisual(direccion);
 
@@ -148,18 +146,36 @@ public class PartidaView {
             salaVisual.setStroke(Color.rgb(135, 135, 145));
         }
 
-        actualizarPuertas(false);
+        for (PuertaVisual puerta : puertas) {
+            puerta.getVisual().setVisible(false);
+            puerta.setAbierta(false);
+        }
 
-        if (esSalaJefe) {
-            actualizarEstado("JEFE DEL MAPA " + numeroMapa);
-        } else {
-            actualizarEstado("MAPA " + numeroMapa);
+        actualizarEstado(
+                esSalaJefe
+                        ? "JEFE DEL MAPA " + numeroMapa
+                        : "MAPA " + numeroMapa
+        );
+    }
+
+    public void configurarSalidas(
+            Set<PuertaVisual.Direccion> salidas,
+            boolean abiertas) {
+
+        for (PuertaVisual puerta : puertas) {
+            boolean seleccionada =
+                    salidas.contains(puerta.getDireccion());
+
+            puerta.getVisual().setVisible(seleccionada);
+            puerta.setAbierta(seleccionada && abiertas);
         }
     }
 
     public void actualizarPuertas(boolean abiertas) {
         for (PuertaVisual puerta : puertas) {
-            puerta.setAbierta(abiertas);
+            if (puerta.getVisual().isVisible()) {
+                puerta.setAbierta(abiertas);
+            }
         }
     }
 
@@ -233,7 +249,9 @@ public class PartidaView {
         titulo.setFill(Color.WHITE);
         titulo.setFont(Font.font("Arial", 36));
 
-        Text indicacion = new Text("Presioná ESC para volver al juego");
+        Text indicacion = new Text(
+                "Presioná ESC para volver al juego"
+        );
         indicacion.setFill(Color.LIGHTGRAY);
         indicacion.setFont(Font.font("Arial", 16));
 
@@ -249,12 +267,7 @@ public class PartidaView {
 
         reanudar.setOnAction(event -> alReanudar.run());
 
-        VBox contenido = new VBox(
-                28,
-                titulo,
-                reanudar,
-                indicacion
-        );
+        VBox contenido = new VBox(28, titulo, reanudar, indicacion);
         contenido.setAlignment(Pos.CENTER);
 
         menuPausa = new StackPane(contenido);
@@ -262,7 +275,6 @@ public class PartidaView {
         menuPausa.setStyle(
                 "-fx-background-color: rgba(0, 0, 0, 0.84);"
         );
-
         menuPausa.setLayoutX(0);
         menuPausa.setLayoutY(0);
 

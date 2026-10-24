@@ -1,3 +1,4 @@
+
 package com.wachin.service;
 
 import com.wachin.exception.DanoInvalidoException;
@@ -33,19 +34,30 @@ public class SalaService {
     }
 
     public Sala generarSala(int numeroSala) {
-        if (numeroSala < 1) {
+        return generarSala(
+                numeroSala,
+                numeroSala,
+                esSalaJefe(numeroSala)
+        );
+    }
+
+    public Sala generarSala(
+            int identificador,
+            int profundidad,
+            boolean esJefe) {
+
+        if (identificador < 1 || profundidad < 1) {
             throw new IllegalArgumentException(
-                    "El número de sala debe ser positivo."
+                    "El identificador y la profundidad deben ser positivos."
             );
         }
 
-        int dificultad = 1 + (numeroSala - 1) / 3;
+        int dificultad = 1 + (profundidad - 1) / 3;
         List<Enemigo> enemigos = new ArrayList<>();
 
-        // Las salas de jefe no generan enemigos normales.
-        if (!esSalaJefe(numeroSala)) {
+        if (!esJefe) {
             int cantidadEnemigos = Math.min(
-                    4 + random.nextInt(3) + (numeroSala - 1) / 2,
+                    4 + random.nextInt(3) + (profundidad - 1) / 2,
                     15
             );
 
@@ -54,14 +66,20 @@ public class SalaService {
             }
         }
 
-        return new Sala(numeroSala, dificultad, enemigos);
+        return new Sala(identificador, dificultad, enemigos);
     }
 
     public Jefe generarJefe(int numeroSala) {
-        int mapa = obtenerNumeroMapa(numeroSala);
+        return generarJefe(
+                numeroSala,
+                obtenerNumeroMapa(numeroSala)
+        );
+    }
 
+    public Jefe generarJefe(int identificador, int mapa) {
         int vida = 250 + (mapa - 1) * 100;
         int dano = 12 + (mapa - 1) * 3;
+
         double velocidad = Math.min(
                 65 + (mapa - 1) * 3.0,
                 110
