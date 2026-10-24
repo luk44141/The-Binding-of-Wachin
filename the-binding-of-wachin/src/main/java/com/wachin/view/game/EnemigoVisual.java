@@ -1,6 +1,7 @@
 package com.wachin.view.game;
 
 import com.wachin.model.Enemigo;
+import com.wachin.model.Jefe;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -10,6 +11,8 @@ public class EnemigoVisual {
     private final Enemigo enemigo;
     private final Circle visual;
     private final double velocidad;
+
+    private final double radio;
 
     private double x;
     private double y;
@@ -22,28 +25,42 @@ public class EnemigoVisual {
         this.enemigo = enemigo;
         this.x = x;
         this.y = y;
+
         this.velocidad = enemigo.getVelocidad();
 
-        visual = new Circle(x, y, 22);
-        visual.setFill(obtenerColor(enemigo.getNombre()));
-        visual.setStroke(Color.BLACK);
-        visual.setStrokeWidth(2);
+        boolean esJefe = enemigo instanceof Jefe;
+        this.radio = esJefe ? 38 : 22;
+
+        visual = new Circle(x, y, radio);
+        visual.setFill(obtenerColor(enemigo));
+        visual.setStroke(esJefe ? Color.GOLD : Color.BLACK);
+        visual.setStrokeWidth(esJefe ? 5 : 2);
     }
 
-    private Color obtenerColor(String nombre) {
-        switch (nombre) {
+    private Color obtenerColor(Enemigo enemigo) {
+        if (enemigo instanceof Jefe) {
+            return Color.PURPLE;
+        }
+
+        switch (enemigo.getNombre()) {
             case "Slime":
                 return Color.LIMEGREEN;
+
             case "Murcielago":
                 return Color.DARKSLATEBLUE;
+
             case "Demonio":
                 return Color.CRIMSON;
+
             case "Monstruo":
                 return Color.DARKORANGE;
+
             case "Esqueleto":
                 return Color.LIGHTGRAY;
+
             case "Fantasma":
                 return Color.LIGHTSKYBLUE;
+
             default:
                 return Color.CRIMSON;
         }
@@ -88,10 +105,12 @@ public class EnemigoVisual {
         double diferenciaX = jugadorX - x;
         double diferenciaY = jugadorY - y;
 
-        return Math.sqrt(
+        double distancia = Math.sqrt(
                 diferenciaX * diferenciaX
                         + diferenciaY * diferenciaY
-        ) < 45;
+        );
+
+        return distancia < radio + 23;
     }
 
     public Enemigo getEnemigo() {

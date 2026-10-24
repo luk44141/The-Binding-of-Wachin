@@ -4,6 +4,7 @@ import com.wachin.exception.DanoInvalidoException;
 import com.wachin.exception.NombreInvalidoException;
 import com.wachin.exception.VidaInvalidaException;
 import com.wachin.model.Enemigo;
+import com.wachin.model.Jefe;
 import com.wachin.model.Sala;
 
 import java.util.ArrayList;
@@ -23,6 +24,14 @@ public class SalaService {
             "Fantasma"
     };
 
+    public boolean esSalaJefe(int numeroSala) {
+        return numeroSala > 0 && numeroSala % 5 == 0;
+    }
+
+    public int obtenerNumeroMapa(int numeroSala) {
+        return ((numeroSala - 1) / 5) + 1;
+    }
+
     public Sala generarSala(int numeroSala) {
         if (numeroSala < 1) {
             throw new IllegalArgumentException(
@@ -31,19 +40,55 @@ public class SalaService {
         }
 
         int dificultad = 1 + (numeroSala - 1) / 3;
-
-        int cantidadEnemigos = Math.min(
-                4 + random.nextInt(3) + (numeroSala - 1) / 2,
-                15
-        );
-
         List<Enemigo> enemigos = new ArrayList<>();
 
-        for (int i = 0; i < cantidadEnemigos; i++) {
-            enemigos.add(crearEnemigo(dificultad));
+        // Las salas de jefe no generan enemigos normales.
+        if (!esSalaJefe(numeroSala)) {
+            int cantidadEnemigos = Math.min(
+                    4 + random.nextInt(3) + (numeroSala - 1) / 2,
+                    15
+            );
+
+            for (int i = 0; i < cantidadEnemigos; i++) {
+                enemigos.add(crearEnemigo(dificultad));
+            }
         }
 
         return new Sala(numeroSala, dificultad, enemigos);
+    }
+
+    public Jefe generarJefe(int numeroSala) {
+        int mapa = obtenerNumeroMapa(numeroSala);
+
+        int vida = 250 + (mapa - 1) * 100;
+        int dano = 12 + (mapa - 1) * 3;
+        double velocidad = Math.min(
+                65 + (mapa - 1) * 3.0,
+                110
+        );
+
+        try {
+            return new Jefe(
+                    "Guardian del mapa " + mapa,
+                    vida,
+                    dano,
+                    "JEFE",
+                    velocidad,
+                    mapa,
+                    "EMBESTIDA",
+                    5 + mapa * 2
+            );
+
+        } catch (
+                NombreInvalidoException |
+                VidaInvalidaException |
+                DanoInvalidoException e) {
+
+            throw new IllegalStateException(
+                    "No se pudo generar el jefe.",
+                    e
+            );
+        }
     }
 
     private Enemigo crearEnemigo(int dificultad) {
@@ -99,6 +144,7 @@ public class SalaService {
                     nombre.toUpperCase(),
                     velocidad
             );
+
         } catch (
                 NombreInvalidoException |
                 VidaInvalidaException |

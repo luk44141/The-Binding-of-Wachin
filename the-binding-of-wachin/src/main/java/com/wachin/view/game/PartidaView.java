@@ -3,7 +3,11 @@ package com.wachin.view.game;
 import com.wachin.model.Jugador;
 import com.wachin.model.Sala;
 
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
@@ -27,15 +31,18 @@ public class PartidaView {
             new Rectangle(50, 50, 900, 600);
 
     private final Text vidaTexto = crearTexto(20, 682);
-    private final Text experienciaTexto = crearTexto(200, 682);
-    private final Text nivelTexto = crearTexto(365, 682);
-    private final Text enemigosTexto = crearTexto(500, 682);
-    private final Text salaTexto = crearTexto(690, 682);
-    private final Text dificultadTexto = crearTexto(845, 682);
-    private final Text estadoTexto = crearTexto(320, 95);
+    private final Text experienciaTexto = crearTexto(185, 682);
+    private final Text nivelTexto = crearTexto(340, 682);
+    private final Text enemigosTexto = crearTexto(470, 682);
+    private final Text mapaTexto = crearTexto(630, 682);
+    private final Text salaTexto = crearTexto(755, 682);
+    private final Text dificultadTexto = crearTexto(865, 682);
+    private final Text estadoTexto = crearTexto(300, 95);
 
     private final List<PuertaVisual> puertas =
             new ArrayList<>();
+
+    private StackPane menuPausa;
 
     public PartidaView() {
         crearEscenario();
@@ -72,9 +79,9 @@ public class PartidaView {
         titulo.setFont(Font.font("Arial", 20));
 
         Text controles = new Text(
-                "WASD: mover | FLECHAS: disparar"
+                "WASD: mover | FLECHAS: disparar | ESC: pausa"
         );
-        controles.setX(650);
+        controles.setX(540);
         controles.setY(30);
         controles.setFill(Color.LIGHTGRAY);
         controles.setFont(Font.font("Arial", 14));
@@ -84,10 +91,11 @@ public class PartidaView {
                 experienciaTexto,
                 nivelTexto,
                 enemigosTexto,
+                mapaTexto,
                 salaTexto,
                 dificultadTexto
         )) {
-            texto.setFont(Font.font("Arial", 15));
+            texto.setFont(Font.font("Arial", 14));
         }
 
         raiz.getChildren().addAll(
@@ -97,6 +105,7 @@ public class PartidaView {
                 experienciaTexto,
                 nivelTexto,
                 enemigosTexto,
+                mapaTexto,
                 salaTexto,
                 dificultadTexto,
                 estadoTexto
@@ -117,7 +126,11 @@ public class PartidaView {
         return raiz;
     }
 
-    public void configurarSala(Sala sala) {
+    public void configurarSala(
+            Sala sala,
+            int numeroMapa,
+            boolean esSalaJefe) {
+
         Color[] colores = {
                 Color.rgb(52, 52, 58),
                 Color.rgb(58, 45, 48),
@@ -126,12 +139,22 @@ public class PartidaView {
                 Color.rgb(65, 52, 38)
         };
 
-        int indiceColor = (sala.getNumero() - 1) % colores.length;
-
-        salaVisual.setFill(colores[indiceColor]);
+        if (esSalaJefe) {
+            salaVisual.setFill(Color.rgb(65, 25, 38));
+            salaVisual.setStroke(Color.GOLD);
+        } else {
+            int indiceColor = (numeroMapa - 1) % colores.length;
+            salaVisual.setFill(colores[indiceColor]);
+            salaVisual.setStroke(Color.rgb(135, 135, 145));
+        }
 
         actualizarPuertas(false);
-        actualizarEstado("SALA " + sala.getNumero());
+
+        if (esSalaJefe) {
+            actualizarEstado("JEFE DEL MAPA " + numeroMapa);
+        } else {
+            actualizarEstado("MAPA " + numeroMapa);
+        }
     }
 
     public void actualizarPuertas(boolean abiertas) {
@@ -163,8 +186,10 @@ public class PartidaView {
     public void actualizarHUD(
             Jugador jugador,
             int cantidadEnemigos,
+            int numeroMapa,
             int numeroSala,
-            int dificultad) {
+            int dificultad,
+            boolean esSalaJefe) {
 
         if (jugador == null) {
             return;
@@ -184,21 +209,70 @@ public class PartidaView {
         );
 
         enemigosTexto.setText(
-                "ENEMIGOS: " + cantidadEnemigos
+                (esSalaJefe ? "JEFE: " : "ENEMIGOS: ")
+                        + cantidadEnemigos
         );
 
-        salaTexto.setText(
-                "SALA: " + numeroSala
-        );
-
-        dificultadTexto.setText(
-                "DIFICULTAD: " + dificultad
-        );
+        mapaTexto.setText("MAPA: " + numeroMapa);
+        salaTexto.setText("SALA: " + numeroSala);
+        dificultadTexto.setText("DIF: " + dificultad);
     }
 
     public void actualizarEstado(String estado) {
         estadoTexto.setText(estado);
         estadoTexto.setFill(Color.WHITE);
         estadoTexto.setFont(Font.font("Arial", 20));
+    }
+
+    public void mostrarPausa(Runnable alReanudar) {
+        if (menuPausa != null) {
+            return;
+        }
+
+        Text titulo = new Text("JUEGO EN PAUSA");
+        titulo.setFill(Color.WHITE);
+        titulo.setFont(Font.font("Arial", 36));
+
+        Text indicacion = new Text("Presioná ESC para volver al juego");
+        indicacion.setFill(Color.LIGHTGRAY);
+        indicacion.setFont(Font.font("Arial", 16));
+
+        Button reanudar = new Button("REANUDAR");
+        reanudar.setPrefWidth(240);
+        reanudar.setPrefHeight(50);
+        reanudar.setFont(Font.font("Arial", 20));
+        reanudar.setStyle(
+                "-fx-background-color: #8b0000;"
+                        + "-fx-text-fill: white;"
+                        + "-fx-cursor: hand;"
+        );
+
+        reanudar.setOnAction(event -> alReanudar.run());
+
+        VBox contenido = new VBox(
+                28,
+                titulo,
+                reanudar,
+                indicacion
+        );
+        contenido.setAlignment(Pos.CENTER);
+
+        menuPausa = new StackPane(contenido);
+        menuPausa.setPrefSize(ANCHO, ALTO);
+        menuPausa.setStyle(
+                "-fx-background-color: rgba(0, 0, 0, 0.84);"
+        );
+
+        menuPausa.setLayoutX(0);
+        menuPausa.setLayoutY(0);
+
+        raiz.getChildren().add(menuPausa);
+    }
+
+    public void ocultarPausa() {
+        if (menuPausa != null) {
+            raiz.getChildren().remove(menuPausa);
+            menuPausa = null;
+        }
     }
 }

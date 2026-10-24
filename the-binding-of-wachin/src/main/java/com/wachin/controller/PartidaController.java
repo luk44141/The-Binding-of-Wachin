@@ -4,6 +4,7 @@ import com.wachin.exception.DanoInvalidoException;
 import com.wachin.exception.NombreInvalidoException;
 import com.wachin.exception.VidaInvalidaException;
 import com.wachin.model.Enemigo;
+import com.wachin.model.Jefe;
 import com.wachin.model.Jugador;
 import com.wachin.model.Sala;
 import com.wachin.service.CombateService;
@@ -66,13 +67,11 @@ public class PartidaController {
     private final Random random = new Random();
 
     private Circle jugadorVisual;
-
     private Sala salaActual;
 
     private double jugadorX = 500;
     private double jugadorY = 350;
-
-    private double tiempoInvulnerable = 0;
+    private double tiempoInvulnerable;
 
     private long ultimoTiempo;
 
@@ -80,6 +79,9 @@ public class PartidaController {
 
     private boolean puertasAbiertas;
     private boolean juegoTerminado;
+    private boolean pausado;
+
+    private int numeroMapa = 1;
 
     public PartidaController(PartidaView vista) {
         this.vista = vista;
@@ -99,7 +101,9 @@ public class PartidaController {
     }
 
     public void teclaPresionada(KeyCode tecla) {
-        teclasPresionadas.add(tecla);
+        if (tecla != KeyCode.ESCAPE && !pausado) {
+            teclasPresionadas.add(tecla);
+        }
     }
 
     public void teclaLiberada(KeyCode tecla) {
@@ -107,7 +111,14 @@ public class PartidaController {
     }
 
     public void manejarTecla(KeyCode tecla) {
-        if (!partidaActiva()) {
+        if (tecla == KeyCode.ESCAPE) {
+            if (!juegoTerminado) {
+                alternarPausa();
+            }
+            return;
+        }
+
+        if (!partidaActiva() || pausado) {
             return;
         }
 
@@ -120,6 +131,24 @@ public class PartidaController {
         } else if (tecla == KeyCode.RIGHT) {
             disparar(1, 0);
         }
+    }
+
+    private void alternarPausa() {
+        if (pausado) {
+            reanudar();
+            return;
+        }
+
+        pausado = true;
+        teclasPresionadas.clear();
+        vista.mostrarPausa(this::reanudar);
+    }
+
+    private void reanudar() {
+        pausado = false;
+        teclasPresionadas.clear();
+        vista.ocultarPausa();
+        ultimoTiempo = 0;
     }
 
     private void crearJugador() {
@@ -168,26 +197,56 @@ public class PartidaController {
         }
 
         salaActual = salaService.generarSala(numeroSala);
+        numeroMapa = salaService.obtenerNumeroMapa(numeroSala);
+
+        boolean esSalaJefe = salaService.esSalaJefe(numeroSala);
+
         puertasAbiertas = false;
 
-        vista.configurarSala(salaActual);
+        vista.configurarSala(
+                salaActual,
+                numeroMapa,
+                esSalaJefe
+        );
 
-        for (Enemigo enemigo : salaActual.getEnemigos()) {
-            juegoService.agregarEnemigo(enemigo);
+        if (esSalaJefe) {
+            crearJefe();
+        } else {
+            for (Enemigo enemigo : salaActual.getEnemigos()) {
+                juegoService.agregarEnemigo(enemigo);
 
-            double[] posicion = generarPosicionEnemigo();
+                double[] posicion = generarPosicionEnemigo();
 
-            EnemigoVisual visual = new EnemigoVisual(
-                    enemigo,
-                    posicion[0],
-                    posicion[1]
-            );
+                EnemigoVisual visual = new EnemigoVisual(
+                        enemigo,
+                        posicion[0],
+                        posicion[1]
+                );
 
-            enemigosVisuales.add(visual);
-            vista.agregarEnemigo(visual);
+                enemigosVisuales.add(visual);
+                vista.agregarEnemigo(visual);
+            }
         }
 
         actualizarHUD();
+    }
+
+    private void crearJefe() {
+        Jefe jefe = salaService.generarJefe(
+                salaActual.getNumero()
+        );
+
+        juegoService.agregarEnemigo(jefe);
+
+        // El jefe aparece lejos de la entrada del jugador.
+        EnemigoVisual visual = new EnemigoVisual(
+                jefe,
+                500,
+                270
+        );
+
+        enemigosVisuales.add(visual);
+        vista.agregarEnemigo(visual);
     }
 
     private void limpiarSalaAnterior() {
@@ -247,13 +306,8 @@ public class PartidaController {
             intentos++;
 
         } while (
-                calcularDistancia(
-                        x,
-                        y,
-                        jugadorX,
-                        jugadorY
-                ) < 180
-                && intentos < 100
+                calcularDistancia(x, y, jugadorX, jugadorY) < 180
+                        && intentos < 100
         );
 
         return new double[]{x, y};
@@ -286,6 +340,11 @@ public class PartidaController {
 
             @Override
             public void handle(long ahora) {
+                if (pausado || juegoTerminado) {
+                    ultimoTiempo = 0;
+                    return;
+                }
+
                 if (ultimoTiempo == 0) {
                     ultimoTiempo = ahora;
                     return;
@@ -295,8 +354,6 @@ public class PartidaController {
                         (ahora - ultimoTiempo) / 1_000_000_000.0;
 
                 ultimoTiempo = ahora;
-
-                // Evita saltos grandes si el juego se pausa brevemente.
                 deltaTiempo = Math.min(deltaTiempo, 0.05);
 
                 if (tiempoInvulnerable > 0) {
@@ -426,7 +483,11 @@ public class PartidaController {
             return false;
         }
 
-        generarSala(salaActual.getNumero() + 1, salida);
+        generarSala(
+                salaActual.getNumero() + 1,
+                salida
+        );
+
         return true;
     }
 
@@ -498,7 +559,9 @@ public class PartidaController {
                     enemigoVisual.getY()
             );
 
-            if (distancia < RADIO_IMPACTO) {
+            if (distancia < RADIO_IMPACTO
+                    + (enemigoVisual.getEnemigo() instanceof Jefe ? 16 : 0)) {
+
                 atacarEnemigo(enemigoVisual);
 
                 vista.quitarProyectil(proyectil);
@@ -536,17 +599,14 @@ public class PartidaController {
 
     private void verificarEstado() {
         if (!juegoService.jugadorEstaVivo()) {
-            if (!juegoTerminado) {
-                juegoTerminado = true;
+            juegoTerminado = true;
 
-                vista.actualizarEstado(
-                        "GAME OVER - SALAS: "
-                                + salaActual.getNumero()
-                );
+            vista.actualizarEstado(
+                    "GAME OVER - LLEGASTE AL MAPA "
+                            + numeroMapa
+            );
 
-                detener();
-            }
-
+            detener();
             return;
         }
 
@@ -558,8 +618,18 @@ public class PartidaController {
         }
 
         if (salaLimpia) {
+            if (salaService.esSalaJefe(salaActual.getNumero())) {
+                vista.actualizarEstado(
+                        "JEFE DERROTADO - MAPA COMPLETADO"
+                );
+            } else {
+                vista.actualizarEstado(
+                        "SALA LIMPIA - ELEGÍ UNA PUERTA"
+                );
+            }
+        } else if (salaService.esSalaJefe(salaActual.getNumero())) {
             vista.actualizarEstado(
-                    "SALA LIMPIA - ELEGÍ UNA PUERTA"
+                    "DERROTÁ AL JEFE DEL MAPA " + numeroMapa
             );
         } else {
             vista.actualizarEstado(
@@ -576,8 +646,10 @@ public class PartidaController {
         vista.actualizarHUD(
                 juegoService.getJugador(),
                 enemigosVisuales.size(),
+                numeroMapa,
                 salaActual.getNumero(),
-                salaActual.getDificultad()
+                salaActual.getDificultad(),
+                salaService.esSalaJefe(salaActual.getNumero())
         );
     }
 
