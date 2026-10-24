@@ -12,6 +12,7 @@ import com.wachin.service.CombateService;
 import com.wachin.service.JuegoService;
 import com.wachin.service.JugadorService;
 import com.wachin.service.SalaService;
+import com.wachin.view.game.AssetVisual;
 import com.wachin.view.game.EnemigoVisual;
 import com.wachin.view.game.PartidaView;
 import com.wachin.view.game.Proyectil;
@@ -19,8 +20,8 @@ import com.wachin.view.game.PuertaVisual;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;
+import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,7 +92,7 @@ public class PartidaController {
     private int siguienteNumeroSala = 1;
     private int numeroSalaActual = 1;
 
-    private Circle jugadorVisual;
+    private Node jugadorVisual;
 
     private double jugadorX = 500;
     private double jugadorY = 350;
@@ -186,10 +187,11 @@ public class PartidaController {
             Jugador jugador = new Jugador("Wachin", 100, 25, 100);
             juegoService.iniciarPartida(jugador);
 
-            jugadorVisual = new Circle(jugadorX, jugadorY, 25);
-            jugadorVisual.setFill(Color.BEIGE);
-            jugadorVisual.setStroke(Color.BLACK);
-            jugadorVisual.setStrokeWidth(3);
+            jugadorVisual = AssetVisual.crear(
+                    "assets/images/player/wachin.png",
+                    jugadorX, jugadorY, 54, 54,
+                    Color.BEIGE, Color.BLACK, 3
+            );
 
             vista.agregarJugador(jugadorVisual);
 
@@ -216,10 +218,6 @@ public class PartidaController {
                 esJefe,
                 mapa
         );
-    }
-
-    private int mapaParaProfundidad(int profundidad) {
-        return ((profundidad - 1) / 5) + 1;
     }
 
     private NodoSala obtenerJefe(int mapa) {
@@ -446,8 +444,7 @@ public class PartidaController {
                 break;
         }
 
-        jugadorVisual.setCenterX(jugadorX);
-        jugadorVisual.setCenterY(jugadorY);
+        AssetVisual.moverAlCentro(jugadorVisual, jugadorX, jugadorY, 54, 54);
     }
 
     private double[] generarPosicionEnemigo() {
@@ -560,8 +557,7 @@ public class PartidaController {
 
         limitarJugador();
 
-        jugadorVisual.setCenterX(jugadorX);
-        jugadorVisual.setCenterY(jugadorY);
+        AssetVisual.moverAlCentro(jugadorVisual, jugadorX, jugadorY, 54, 54);
     }
 
     private void limitarJugador() {
@@ -750,7 +746,7 @@ public class PartidaController {
                 enemigosVisuales.size(),
                 salaActual.mapa,
                 numeroSalaActual,
-                numeroSalaActual,
+                salaActual.profundidad,
                 salaActual.esJefe
         );
     }
