@@ -10,14 +10,13 @@ import com.wachin.service.CombateService;
 import com.wachin.service.JuegoService;
 import com.wachin.service.JugadorService;
 import com.wachin.view.game.EnemigoVisual;
+import com.wachin.view.game.PartidaView;
 import com.wachin.view.game.Proyectil;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,13 +37,7 @@ public class PartidaController {
     private static final double RADIO_IMPACTO = 28;
     private static final double TIEMPO_INVULNERABLE = 0.8;
 
-    private final Pane raiz;
-
-    private final Text vidaTexto;
-    private final Text experienciaTexto;
-    private final Text nivelTexto;
-    private final Text enemigosTexto;
-    private final Text estadoTexto;
+    private final PartidaView vista;
 
     private final Set<KeyCode> teclasPresionadas =
             new HashSet<>();
@@ -75,20 +68,8 @@ public class PartidaController {
 
     private AnimationTimer gameLoop;
 
-    public PartidaController(
-            Pane raiz,
-            Text vidaTexto,
-            Text experienciaTexto,
-            Text nivelTexto,
-            Text enemigosTexto,
-            Text estadoTexto) {
-
-        this.raiz = raiz;
-        this.vidaTexto = vidaTexto;
-        this.experienciaTexto = experienciaTexto;
-        this.nivelTexto = nivelTexto;
-        this.enemigosTexto = enemigosTexto;
-        this.estadoTexto = estadoTexto;
+    public PartidaController(PartidaView vista) {
+        this.vista = vista;
     }
 
     public void iniciar() {
@@ -149,7 +130,7 @@ public class PartidaController {
             jugadorVisual.setStroke(Color.BLACK);
             jugadorVisual.setStrokeWidth(3);
 
-            raiz.getChildren().add(jugadorVisual);
+            vista.agregarJugador(jugadorVisual);
 
         } catch (
                 NombreInvalidoException |
@@ -207,7 +188,7 @@ public class PartidaController {
         );
 
         enemigosVisuales.add(visual);
-        raiz.getChildren().add(visual.getVisual());
+        vista.agregarEnemigo(visual);
     }
 
     private void disparar(
@@ -229,7 +210,7 @@ public class PartidaController {
         );
 
         proyectiles.add(proyectil);
-        raiz.getChildren().add(proyectil.getVisual());
+        vista.agregarProyectil(proyectil);
     }
 
     private void iniciarGameLoop() {
@@ -354,7 +335,7 @@ public class PartidaController {
             proyectil.actualizar(deltaTiempo);
 
             if (proyectil.estaFueraDeLaSala()) {
-                raiz.getChildren().remove(proyectil.getVisual());
+                vista.quitarProyectil(proyectil);
                 iterador.remove();
                 continue;
             }
@@ -380,7 +361,7 @@ public class PartidaController {
             if (distancia < RADIO_IMPACTO) {
                 atacarEnemigo(enemigoVisual);
 
-                raiz.getChildren().remove(proyectil.getVisual());
+                vista.quitarProyectil(proyectil);
                 iterador.remove();
 
                 break;
@@ -398,7 +379,7 @@ public class PartidaController {
             );
 
             if (combateService.estaDerrotado(enemigo)) {
-                raiz.getChildren().remove(enemigoVisual.getVisual());
+                vista.quitarEnemigo(enemigoVisual);
                 enemigosVisuales.remove(enemigoVisual);
 
                 juegoService.derrotarEnemigo(
@@ -418,36 +399,20 @@ public class PartidaController {
         juegoService.verificarEstado();
 
         if (juegoService.isPartidaGanada()) {
-            estadoTexto.setText("SALA COMPLETADA");
+            vista.actualizarEstado("SALA COMPLETADA");
+            detener();
         } else if (juegoService.isPartidaTerminada()) {
-            estadoTexto.setText("GAME OVER");
+            vista.actualizarEstado("GAME OVER");
+            detener();
         } else {
-            estadoTexto.setText("");
+            vista.actualizarEstado("");
         }
     }
 
     private void actualizarHUD() {
-        Jugador jugador = juegoService.getJugador();
-
-        if (jugador == null) {
-            return;
-        }
-
-        vidaTexto.setText(
-                "VIDA: " + jugador.getVida()
-                        + " / " + jugador.getVidaMaxima()
-        );
-
-        experienciaTexto.setText(
-                "EXP: " + jugador.getExperiencia()
-        );
-
-        nivelTexto.setText(
-                "NIVEL: " + jugador.getNivel()
-        );
-
-        enemigosTexto.setText(
-                "ENEMIGOS: " + juegoService.getEnemigos().size()
+        vista.actualizarHUD(
+                juegoService.getJugador(),
+                juegoService.getEnemigos().size()
         );
     }
 
