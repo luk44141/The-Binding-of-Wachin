@@ -1,4 +1,4 @@
-package com.wachin.game;
+package com.wachin.view.game;
 
 import com.wachin.model.Enemigo;
 

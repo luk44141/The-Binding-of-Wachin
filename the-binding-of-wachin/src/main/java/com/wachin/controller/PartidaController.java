@@ -1,16 +1,16 @@
 
-package com.wachin;
+package com.wachin.controller;
 
 import com.wachin.exception.DanoInvalidoException;
 import com.wachin.exception.NombreInvalidoException;
 import com.wachin.exception.VidaInvalidaException;
-import com.wachin.game.EnemigoVisual;
-import com.wachin.game.Proyectil;
 import com.wachin.model.Enemigo;
 import com.wachin.model.Jugador;
 import com.wachin.service.CombateService;
 import com.wachin.service.JuegoService;
 import com.wachin.service.JugadorService;
+import com.wachin.view.game.EnemigoVisual;
+import com.wachin.view.game.Proyectil;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;

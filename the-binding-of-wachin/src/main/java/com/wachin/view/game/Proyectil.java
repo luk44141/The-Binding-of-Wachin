@@ -1,4 +1,4 @@
-package com.wachin.game;
+package com.wachin.view.game;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;

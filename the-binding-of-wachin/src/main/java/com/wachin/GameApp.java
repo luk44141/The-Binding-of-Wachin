@@ -1,6 +1,8 @@
 
 package com.wachin;
 
+import com.wachin.controller.PartidaController;
+import com.wachin.view.menu.MenuInicial;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -26,51 +28,60 @@ public class GameApp extends Application {
 
     private PartidaController partidaController;
 
-    @Override
-    public void start(Stage stage) {
-        raiz = new Pane();
 
-        crearEscenario();
-        crearHUD();
+@Override
+public void start(Stage stage) {
+    stage.setTitle("The Binding of Wachin");
+    stage.setResizable(false);
 
-        Scene escena = new Scene(
-                raiz,
-                ANCHO,
-                ALTO
-        );
+    stage.setScene(new Scene(
+            MenuInicial.crear(() -> iniciarPartida(stage)),
+            ANCHO,
+            ALTO
+    ));
 
-        partidaController = new PartidaController(
-                raiz,
-                vidaTexto,
-                experienciaTexto,
-                nivelTexto,
-                enemigosTexto,
-                estadoTexto
-        );
+    stage.setOnCloseRequest(event -> {
+        if (partidaController != null) {
+            partidaController.detener();
+        }
+    });
 
-        escena.setOnKeyPressed(event -> {
-            KeyCode tecla = event.getCode();
+    stage.show();
+}
 
-            partidaController.teclaPresionada(tecla);
-            partidaController.manejarTecla(tecla);
-        });
+private void iniciarPartida(Stage stage) {
+    raiz = new Pane();
 
-        escena.setOnKeyReleased(event ->
-                partidaController.teclaLiberada(event.getCode())
-        );
+    crearEscenario();
+    crearHUD();
 
-        stage.setTitle("The Binding of Wachin");
-        stage.setScene(escena);
-        stage.setResizable(false);
+    Scene escena = new Scene(raiz, ANCHO, ALTO);
 
-        stage.setOnCloseRequest(event ->
-                partidaController.detener()
-        );
+    partidaController = new PartidaController(
+            raiz,
+            vidaTexto,
+            experienciaTexto,
+            nivelTexto,
+            enemigosTexto,
+            estadoTexto
+    );
 
-        stage.show();
+    escena.setOnKeyPressed(event -> {
+        KeyCode tecla = event.getCode();
 
-        partidaController.iniciar();
-    }
+        partidaController.teclaPresionada(tecla);
+        partidaController.manejarTecla(tecla);
+    });
+
+    escena.setOnKeyReleased(event ->
+            partidaController.teclaLiberada(event.getCode())
+    );
+
+    stage.setScene(escena);
+
+    partidaController.iniciar();
+}
+
 
     private void crearEscenario() {
         Rectangle fondo = new Rectangle(
