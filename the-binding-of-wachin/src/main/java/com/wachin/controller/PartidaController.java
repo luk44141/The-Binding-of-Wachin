@@ -1,4 +1,3 @@
-
 package com.wachin.controller;
 
 import com.wachin.exception.DanoInvalidoException;
@@ -6,12 +5,15 @@ import com.wachin.exception.NombreInvalidoException;
 import com.wachin.exception.VidaInvalidaException;
 import com.wachin.model.Enemigo;
 import com.wachin.model.Jugador;
+import com.wachin.model.Sala;
 import com.wachin.service.CombateService;
 import com.wachin.service.JuegoService;
 import com.wachin.service.JugadorService;
+import com.wachin.service.SalaService;
 import com.wachin.view.game.EnemigoVisual;
 import com.wachin.view.game.PartidaView;
 import com.wachin.view.game.Proyectil;
+import com.wachin.view.game.PuertaVisual;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class PartidaController {
@@ -57,7 +60,14 @@ public class PartidaController {
     private final JugadorService jugadorService =
             new JugadorService();
 
+    private final SalaService salaService =
+            new SalaService();
+
+    private final Random random = new Random();
+
     private Circle jugadorVisual;
+
+    private Sala salaActual;
 
     private double jugadorX = 500;
     private double jugadorY = 350;
@@ -68,13 +78,16 @@ public class PartidaController {
 
     private AnimationTimer gameLoop;
 
+    private boolean puertasAbiertas;
+    private boolean juegoTerminado;
+
     public PartidaController(PartidaView vista) {
         this.vista = vista;
     }
 
     public void iniciar() {
         crearJugador();
-        crearEnemigos();
+        generarSala(1, null);
         actualizarHUD();
         iniciarGameLoop();
     }
@@ -138,57 +151,112 @@ public class PartidaController {
                 DanoInvalidoException e) {
 
             throw new IllegalStateException(
-                    "No se pudo crear a Wachin.",
+                    "No se pudo crear al jugador.",
                     e
             );
         }
     }
 
-    private void crearEnemigos() {
-        try {
-            crearEnemigo("Slime", 200, 180);
-            crearEnemigo("Murcielago", 800, 180);
-            crearEnemigo("Demonio", 200, 520);
-            crearEnemigo("Monstruo", 800, 520);
+    private void generarSala(
+            int numeroSala,
+            PuertaVisual.Direccion salidaAnterior) {
 
-        } catch (
-                NombreInvalidoException |
-                VidaInvalidaException |
-                DanoInvalidoException e) {
+        limpiarSalaAnterior();
 
-            throw new IllegalStateException(
-                    "No se pudieron crear los enemigos.",
-                    e
-            );
+        if (salidaAnterior != null) {
+            colocarJugadorEnEntrada(salidaAnterior);
         }
+
+        salaActual = salaService.generarSala(numeroSala);
+        puertasAbiertas = false;
+
+        vista.configurarSala(salaActual);
+
+        for (Enemigo enemigo : salaActual.getEnemigos()) {
+            juegoService.agregarEnemigo(enemigo);
+
+            double[] posicion = generarPosicionEnemigo();
+
+            EnemigoVisual visual = new EnemigoVisual(
+                    enemigo,
+                    posicion[0],
+                    posicion[1]
+            );
+
+            enemigosVisuales.add(visual);
+            vista.agregarEnemigo(visual);
+        }
+
+        actualizarHUD();
     }
 
-    private void crearEnemigo(
-            String nombre,
-            double x,
-            double y)
-            throws NombreInvalidoException,
-            VidaInvalidaException,
-            DanoInvalidoException {
+    private void limpiarSalaAnterior() {
+        for (EnemigoVisual enemigo : enemigosVisuales) {
+            vista.quitarEnemigo(enemigo);
+        }
 
-        Enemigo enemigo = new Enemigo(
-                nombre,
-                50,
-                10,
-                "NORMAL",
-                1.0
+        enemigosVisuales.clear();
+
+        for (Proyectil proyectil : proyectiles) {
+            vista.quitarProyectil(proyectil);
+        }
+
+        proyectiles.clear();
+
+        juegoService.getEnemigos().clear();
+        teclasPresionadas.clear();
+    }
+
+    private void colocarJugadorEnEntrada(
+            PuertaVisual.Direccion salidaAnterior) {
+
+        switch (salidaAnterior) {
+            case ARRIBA:
+                jugadorX = 500;
+                jugadorY = 580;
+                break;
+
+            case ABAJO:
+                jugadorX = 500;
+                jugadorY = 100;
+                break;
+
+            case IZQUIERDA:
+                jugadorX = 880;
+                jugadorY = 350;
+                break;
+
+            case DERECHA:
+                jugadorX = 120;
+                jugadorY = 350;
+                break;
+        }
+
+        jugadorVisual.setCenterX(jugadorX);
+        jugadorVisual.setCenterY(jugadorY);
+    }
+
+    private double[] generarPosicionEnemigo() {
+        double x;
+        double y;
+        int intentos = 0;
+
+        do {
+            x = 140 + random.nextDouble() * 720;
+            y = 130 + random.nextDouble() * 440;
+            intentos++;
+
+        } while (
+                calcularDistancia(
+                        x,
+                        y,
+                        jugadorX,
+                        jugadorY
+                ) < 180
+                && intentos < 100
         );
 
-        juegoService.agregarEnemigo(enemigo);
-
-        EnemigoVisual visual = new EnemigoVisual(
-                enemigo,
-                x,
-                y
-        );
-
-        enemigosVisuales.add(visual);
-        vista.agregarEnemigo(visual);
+        return new double[]{x, y};
     }
 
     private void disparar(
@@ -228,15 +296,22 @@ public class PartidaController {
 
                 ultimoTiempo = ahora;
 
-                if (tiempoInvulnerable > 0) {
-                    tiempoInvulnerable -= deltaTiempo;
+                // Evita saltos grandes si el juego se pausa brevemente.
+                deltaTiempo = Math.min(deltaTiempo, 0.05);
 
-                    if (tiempoInvulnerable < 0) {
-                        tiempoInvulnerable = 0;
-                    }
+                if (tiempoInvulnerable > 0) {
+                    tiempoInvulnerable = Math.max(
+                            0,
+                            tiempoInvulnerable - deltaTiempo
+                    );
                 }
 
                 actualizarJugador(deltaTiempo);
+
+                if (detectarPuerta()) {
+                    return;
+                }
+
                 actualizarEnemigos(deltaTiempo);
                 actualizarProyectiles(deltaTiempo);
                 verificarEstado();
@@ -248,7 +323,7 @@ public class PartidaController {
     }
 
     private boolean partidaActiva() {
-        return !juegoService.isPartidaTerminada()
+        return !juegoTerminado
                 && juegoService.jugadorEstaVivo();
     }
 
@@ -257,22 +332,41 @@ public class PartidaController {
             return;
         }
 
-        double movimiento = VELOCIDAD_JUGADOR * deltaTiempo;
+        double direccionX = 0;
+        double direccionY = 0;
 
         if (teclasPresionadas.contains(KeyCode.W)) {
-            jugadorY -= movimiento;
+            direccionY--;
         }
 
         if (teclasPresionadas.contains(KeyCode.S)) {
-            jugadorY += movimiento;
+            direccionY++;
         }
 
         if (teclasPresionadas.contains(KeyCode.A)) {
-            jugadorX -= movimiento;
+            direccionX--;
         }
 
         if (teclasPresionadas.contains(KeyCode.D)) {
-            jugadorX += movimiento;
+            direccionX++;
+        }
+
+        double longitud = Math.sqrt(
+                direccionX * direccionX
+                        + direccionY * direccionY
+        );
+
+        if (longitud > 0) {
+            direccionX /= longitud;
+            direccionY /= longitud;
+
+            jugadorX += direccionX
+                    * VELOCIDAD_JUGADOR
+                    * deltaTiempo;
+
+            jugadorY += direccionY
+                    * VELOCIDAD_JUGADOR
+                    * deltaTiempo;
         }
 
         limitarJugador();
@@ -293,6 +387,49 @@ public class PartidaController {
         );
     }
 
+    private boolean detectarPuerta() {
+        if (!puertasAbiertas || !partidaActiva()) {
+            return false;
+        }
+
+        PuertaVisual.Direccion salida = null;
+
+        boolean cercaDelCentroHorizontal =
+                Math.abs(jugadorX - 500) <= 55;
+
+        boolean cercaDelCentroVertical =
+                Math.abs(jugadorY - 350) <= 55;
+
+        if (jugadorY <= 80 && cercaDelCentroHorizontal) {
+            salida = PuertaVisual.Direccion.ARRIBA;
+
+        } else if (
+                jugadorY >= 620
+                        && cercaDelCentroHorizontal) {
+
+            salida = PuertaVisual.Direccion.ABAJO;
+
+        } else if (
+                jugadorX <= 80
+                        && cercaDelCentroVertical) {
+
+            salida = PuertaVisual.Direccion.IZQUIERDA;
+
+        } else if (
+                jugadorX >= 920
+                        && cercaDelCentroVertical) {
+
+            salida = PuertaVisual.Direccion.DERECHA;
+        }
+
+        if (salida == null) {
+            return false;
+        }
+
+        generarSala(salaActual.getNumero() + 1, salida);
+        return true;
+    }
+
     private void actualizarEnemigos(double deltaTiempo) {
         if (!partidaActiva()) {
             return;
@@ -306,7 +443,10 @@ public class PartidaController {
             );
 
             if (tiempoInvulnerable <= 0
-                    && enemigoVisual.tocaJugador(jugadorX, jugadorY)) {
+                    && enemigoVisual.tocaJugador(
+                            jugadorX,
+                            jugadorY
+                    )) {
 
                 recibirDanoJugador(
                         enemigoVisual.getEnemigo().getDano()
@@ -348,8 +488,8 @@ public class PartidaController {
             Proyectil proyectil,
             Iterator<Proyectil> iterador) {
 
-        for (int i = 0; i < enemigosVisuales.size(); i++) {
-            EnemigoVisual enemigoVisual = enemigosVisuales.get(i);
+        for (EnemigoVisual enemigoVisual
+                : new ArrayList<>(enemigosVisuales)) {
 
             double distancia = calcularDistancia(
                     proyectil.getX(),
@@ -363,8 +503,7 @@ public class PartidaController {
 
                 vista.quitarProyectil(proyectil);
                 iterador.remove();
-
-                break;
+                return;
             }
         }
     }
@@ -396,23 +535,49 @@ public class PartidaController {
     }
 
     private void verificarEstado() {
-        juegoService.verificarEstado();
+        if (!juegoService.jugadorEstaVivo()) {
+            if (!juegoTerminado) {
+                juegoTerminado = true;
 
-        if (juegoService.isPartidaGanada()) {
-            vista.actualizarEstado("SALA COMPLETADA");
-            detener();
-        } else if (juegoService.isPartidaTerminada()) {
-            vista.actualizarEstado("GAME OVER");
-            detener();
+                vista.actualizarEstado(
+                        "GAME OVER - SALAS: "
+                                + salaActual.getNumero()
+                );
+
+                detener();
+            }
+
+            return;
+        }
+
+        boolean salaLimpia = enemigosVisuales.isEmpty();
+
+        if (salaLimpia && !puertasAbiertas) {
+            puertasAbiertas = true;
+            vista.actualizarPuertas(true);
+        }
+
+        if (salaLimpia) {
+            vista.actualizarEstado(
+                    "SALA LIMPIA - ELEGÍ UNA PUERTA"
+            );
         } else {
-            vista.actualizarEstado("");
+            vista.actualizarEstado(
+                    "DERROTÁ A TODOS LOS ENEMIGOS"
+            );
         }
     }
 
     private void actualizarHUD() {
+        if (salaActual == null) {
+            return;
+        }
+
         vista.actualizarHUD(
                 juegoService.getJugador(),
-                juegoService.getEnemigos().size()
+                enemigosVisuales.size(),
+                salaActual.getNumero(),
+                salaActual.getDificultad()
         );
     }
 
