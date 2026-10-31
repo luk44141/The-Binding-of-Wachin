@@ -21,19 +21,18 @@ public class CombateService {
         try {
             atacante.atacar(objetivo);
         } catch (Exception e) {
-            throw new DanoInvalidoException(
-                    "No se pudo realizar el ataque."
+            throw new IllegalStateException(
+                    "No se pudo ejecutar el ataque.",
+                    e
             );
         }
     }
 
     public boolean estaVivo(Entidad entidad) {
-
         return entidad != null && entidad.getVida() > 0;
     }
 
     public boolean estaDerrotado(Entidad entidad) {
-
         return entidad == null || entidad.getVida() <= 0;
     }
 }

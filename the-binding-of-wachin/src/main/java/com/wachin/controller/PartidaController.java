@@ -17,6 +17,7 @@ import com.wachin.view.game.EnemigoVisual;
 import com.wachin.view.game.PartidaView;
 import com.wachin.view.game.Proyectil;
 import com.wachin.view.game.PuertaVisual;
+import com.wachin.ConfiguracionPartida;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;
@@ -46,6 +47,7 @@ public class PartidaController {
     private static final double TIEMPO_INVULNERABLE = 0.45;
 
     private final PartidaView vista;
+    private final ConfiguracionPartida configuracion;
 
     private final Set<KeyCode> teclasPresionadas = new HashSet<>();
     private final List<Proyectil> proyectiles = new ArrayList<>();
@@ -105,8 +107,14 @@ public class PartidaController {
     private boolean juegoTerminado;
     private boolean pausado;
 
-    public PartidaController(PartidaView vista) {
-        this.vista = vista;
+    public PartidaController(
+        PartidaView vista,
+        ConfiguracionPartida configuracion) {
+
+    this.vista = vista;
+    this.configuracion = configuracion != null
+            ? configuracion
+            : new ConfiguracionPartida(null, null);
     }
 
     public void iniciar() {
@@ -124,10 +132,12 @@ public class PartidaController {
         }
     }
 
-    public void teclaPresionada(KeyCode tecla) {
-        if (tecla != KeyCode.ESCAPE && !pausado) {
-            teclasPresionadas.add(tecla);
-        }
+    public boolean teclaPresionada(KeyCode tecla) {
+    if (tecla == KeyCode.ESCAPE || pausado || !partidaActiva()) {
+        return false;
+    }
+
+    return teclasPresionadas.add(tecla);
     }
 
     public void teclaLiberada(KeyCode tecla) {
@@ -184,13 +194,21 @@ public class PartidaController {
 
     private void crearJugador() {
         try {
-            Jugador jugador = new Jugador("Wachin", 100, 25, 100);
+            String nombre = configuracion.getPersonaje().getNombre();
+            String ruta = configuracion.getRutaPersonaje();
+
+            Jugador jugador = new Jugador(nombre, 100, 25, 100);
             juegoService.iniciarPartida(jugador);
 
             jugadorVisual = AssetVisual.crear(
-                    "assets/images/player/wachin.png",
-                    jugadorX, jugadorY, 54, 54,
-                    Color.BEIGE, Color.BLACK, 3
+                    ruta,
+                    jugadorX,
+                    jugadorY,
+                    90,
+                    90,
+                    Color.BEIGE,
+                    Color.BLACK,
+                    3
             );
 
             vista.agregarJugador(jugadorVisual);
@@ -472,11 +490,12 @@ public class PartidaController {
         }
 
         Proyectil proyectil = new Proyectil(
-                jugadorX,
-                jugadorY,
-                direccionX * VELOCIDAD_PROYECTIL,
-                direccionY * VELOCIDAD_PROYECTIL,
-                jugador.getDano()
+        jugadorX,
+        jugadorY,
+        direccionX * VELOCIDAD_PROYECTIL,
+        direccionY * VELOCIDAD_PROYECTIL,
+        jugador.getDano(),
+        configuracion.getRutaProyectil()
         );
 
         proyectiles.add(proyectil);

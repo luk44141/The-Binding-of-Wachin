@@ -7,7 +7,6 @@ import com.wachin.exception.VidaMaximaException;
 import com.wachin.interfaces.Atacable;
 
 public abstract class Entidad implements Atacable {
-
     private int id;
     private String nombre;
     private int vida;
@@ -17,74 +16,53 @@ public abstract class Entidad implements Atacable {
 
     public Entidad(String nombre, int vidaMaxima, int dano)
             throws NombreInvalidoException, VidaInvalidaException, DanoInvalidoException {
-
         validarNombre(nombre);
-        validarVida(vidaMaxima);
+        validarVidaMaxima(vidaMaxima);
         validarDano(dano);
-
-        this.nombre = nombre;
+        this.nombre = nombre.trim();
         this.vidaMaxima = vidaMaxima;
         this.vida = vidaMaxima;
         this.dano = dano;
     }
 
-    public Entidad(int id, String nombre, int vida, int vidaMaxima,
-                   int dano, String tipo)
+    public Entidad(int id, String nombre, int vida, int vidaMaxima, int dano, String tipo)
             throws NombreInvalidoException, VidaInvalidaException, DanoInvalidoException {
-
         validarNombre(nombre);
-        validarVida(vidaMaxima);
+        validarVidaMaxima(vidaMaxima);
         validarDano(dano);
-
+        if (vida < 0 || vida > vidaMaxima) {
+            throw new VidaInvalidaException("La vida actual debe estar entre 0 y la vida maxima.");
+        }
         this.id = id;
-        this.nombre = nombre;
+        this.nombre = nombre.trim();
         this.vida = vida;
         this.vidaMaxima = vidaMaxima;
         this.dano = dano;
         this.tipo = tipo;
     }
 
-    private void validarNombre(String nombre) throws NombreInvalidoException {
-        if (nombre == null || nombre.trim().isEmpty()) {
-            throw new NombreInvalidoException("El nombre no puede estar vacío.");
-        }
+    private void validarNombre(String valor) throws NombreInvalidoException {
+        if (valor == null || valor.isBlank()) throw new NombreInvalidoException("El nombre no puede estar vacio.");
     }
 
-    private void validarVida(int vida) throws VidaInvalidaException {
-        if (vida <= 0) {
-            throw new VidaInvalidaException("La vida debe ser mayor a 0.");
-        }
+    private void validarVidaMaxima(int valor) throws VidaInvalidaException {
+        if (valor <= 0) throw new VidaInvalidaException("La vida maxima debe ser mayor a cero.");
     }
 
-    private void validarDano(int dano) throws DanoInvalidoException {
-        if (dano < 0) {
-            throw new DanoInvalidoException("El daño no puede ser negativo.");
-        }
+    private void validarDano(int valor) throws DanoInvalidoException {
+        if (valor < 0) throw new DanoInvalidoException("El dano no puede ser negativo.");
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
+    public int getId() { return id; }
+    public String getNombre() { return nombre; }
+    public int getVida() { return vida; }
+    public int getVidaMaxima() { return vidaMaxima; }
+    public int getDano() { return dano; }
+    public String getTipo() { return tipo; }
 
     public void setNombre(String nombre) throws NombreInvalidoException {
         validarNombre(nombre);
-        this.nombre = nombre;
-    }
-
-    public int getVida() {
-        return vida;
-    }
-
-    public int getVidaMaxima() {
-        return vidaMaxima;
-    }
-
-    public int getDano() {
-        return dano;
+        this.nombre = nombre.trim();
     }
 
     public void setDano(int dano) throws DanoInvalidoException {
@@ -92,30 +70,18 @@ public abstract class Entidad implements Atacable {
         this.dano = dano;
     }
 
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
+    public void setTipo(String tipo) { this.tipo = tipo; }
 
     @Override
     public void recibirDano(int dano) {
-        this.vida -= dano;
-
-        if (this.vida < 0) {
-            this.vida = 0;
-        }
+        // Un dano negativo ya no puede curar accidentalmente a una entidad.
+        if (dano <= 0 || vida <= 0) return;
+        vida = Math.max(0, vida - dano);
     }
 
     public void curar(int cantidad) throws VidaMaximaException {
-        if (vida + cantidad > vidaMaxima) {
-            throw new VidaMaximaException(
-                "La vida no puede superar la vida máxima."
-            );
-        }
-
+        if (cantidad < 0) throw new IllegalArgumentException("La curacion no puede ser negativa.");
+        if (vida + cantidad > vidaMaxima) throw new VidaMaximaException("La vida no puede superar la vida maxima.");
         vida += cantidad;
     }
 }

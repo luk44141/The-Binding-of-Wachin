@@ -1,4 +1,3 @@
-
 package com.wachin;
 
 import com.wachin.controller.PartidaController;
@@ -19,7 +18,9 @@ public class GameApp extends Application {
         stage.setResizable(false);
 
         Scene escenaMenu = new Scene(
-                MenuInicial.crear(() -> iniciarPartida(stage)),
+                MenuInicial.crear(
+                        configuracion -> iniciarPartida(stage, configuracion)
+                ),
                 PartidaView.ANCHO,
                 PartidaView.ALTO
         );
@@ -28,13 +29,20 @@ public class GameApp extends Application {
         stage.show();
     }
 
-    private void iniciarPartida(Stage stage) {
+    private void iniciarPartida(
+            Stage stage,
+            ConfiguracionPartida configuracion) {
+
         if (partidaController != null) {
             partidaController.detener();
         }
 
         PartidaView vista = new PartidaView();
-        partidaController = new PartidaController(vista);
+
+        partidaController = new PartidaController(
+                vista,
+                configuracion
+        );
 
         Scene escenaPartida = new Scene(
                 vista.getRaiz(),
@@ -43,8 +51,9 @@ public class GameApp extends Application {
         );
 
         escenaPartida.setOnKeyPressed(event -> {
-            partidaController.teclaPresionada(event.getCode());
-            partidaController.manejarTecla(event.getCode());
+            if (partidaController.teclaPresionada(event.getCode())) {
+                partidaController.manejarTecla(event.getCode());
+            }
         });
 
         escenaPartida.setOnKeyReleased(event ->
@@ -52,6 +61,7 @@ public class GameApp extends Application {
         );
 
         stage.setScene(escenaPartida);
+
         partidaController.iniciar();
         escenaPartida.getRoot().requestFocus();
     }
