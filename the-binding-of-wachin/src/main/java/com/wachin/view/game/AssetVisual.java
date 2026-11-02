@@ -14,15 +14,6 @@ public final class AssetVisual {
     private AssetVisual() {
     }
 
-    public static boolean existe(String ruta) {
-        String rutaClasspath = ruta.startsWith("/") ? ruta : "/" + ruta;
-        try (InputStream recurso = AssetVisual.class.getResourceAsStream(rutaClasspath)) {
-            return recurso != null;
-        } catch (Exception ignored) {
-            return false;
-        }
-    }
-
     public static Node crear(
             String ruta,
             double centroX,

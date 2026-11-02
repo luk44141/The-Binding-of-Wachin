@@ -10,6 +10,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -37,12 +38,19 @@ public class PartidaView {
     private final Rectangle barraVidaJefe = new Rectangle(330, 48, 340, 13);
     private final List<PuertaVisual> puertas = new ArrayList<>();
     private StackPane menuPausa;
+    private Node jugadorVisual;
+    private final Text avisoDanio = crearTexto(430, 145);
 
     public PartidaView() {
         raiz.setFocusTraversable(true);
         crearEscenario();
         crearPuertas();
         crearHUD();
+        avisoDanio.setText("¡DAÑO RECIBIDO!");
+        avisoDanio.setFill(Color.RED);
+        avisoDanio.setFont(Font.font("Arial", 25));
+        avisoDanio.setVisible(false);
+        raiz.getChildren().add(avisoDanio);
     }
 
     private void crearEscenario() {
@@ -126,12 +134,6 @@ public class PartidaView {
         }
     }
 
-    public void actualizarPuertas(boolean abiertas) {
-        for (PuertaVisual puerta : puertas) {
-            if (puerta.getVisual().isVisible()) puerta.setAbierta(abiertas);
-        }
-    }
-
     public void mostrarBarraJefe(Enemigo jefe) {
         if (jefe == null) return;
         tituloJefe.setText(jefe.getNombre() + "  " + jefe.getVida() + "/" + jefe.getVidaMaxima());
@@ -156,7 +158,21 @@ public class PartidaView {
         barraVidaJefe.setVisible(false);
     }
 
-    public void agregarJugador(Node jugador) { raiz.getChildren().add(jugador); }
+    public void agregarJugador(Node jugador) { jugadorVisual = jugador; raiz.getChildren().add(jugador); }
+    public void mostrarDanio() {
+        avisoDanio.setVisible(true);
+        if (jugadorVisual != null) {
+            ColorAdjust efecto = new ColorAdjust();
+            efecto.setHue(-0.05);
+            efecto.setSaturation(1);
+            efecto.setBrightness(0.25);
+            jugadorVisual.setEffect(efecto);
+        }
+    }
+    public void actualizarIndicadorDanio(boolean invulnerable) {
+        if (jugadorVisual != null && !invulnerable) jugadorVisual.setEffect(null);
+        avisoDanio.setVisible(invulnerable);
+    }
     public void agregarEnemigo(EnemigoVisual enemigo) { raiz.getChildren().add(enemigo.getVisual()); }
     public void quitarEnemigo(EnemigoVisual enemigo) { raiz.getChildren().remove(enemigo.getVisual()); }
     public void agregarProyectil(Proyectil proyectil) { raiz.getChildren().add(proyectil.getVisual()); }

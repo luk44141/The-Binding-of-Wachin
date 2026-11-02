@@ -11,9 +11,11 @@ import javafx.stage.Stage;
 public class GameApp extends Application {
 
     private PartidaController partidaController;
+    private Stage stage;
 
     @Override
     public void start(Stage stage) {
+        this.stage = stage;
         stage.setTitle("The Binding of Wachin");
         stage.setResizable(false);
 
@@ -41,7 +43,8 @@ public class GameApp extends Application {
 
         partidaController = new PartidaController(
                 vista,
-                configuracion
+                configuracion,
+                this::mostrarReintento
         );
 
         Scene escenaPartida = new Scene(
@@ -64,6 +67,12 @@ public class GameApp extends Application {
 
         partidaController.iniciar();
         escenaPartida.getRoot().requestFocus();
+    }
+
+    private void mostrarReintento(ConfiguracionPartida configuracion) {
+        stage.setScene(new Scene(MenuInicial.crearReintento(configuracion,
+                nuevaConfiguracion -> iniciarPartida(stage, nuevaConfiguracion)),
+                PartidaView.ANCHO, PartidaView.ALTO));
     }
 
     @Override

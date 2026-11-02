@@ -15,26 +15,36 @@ public final class MenuInicial {
     private MenuInicial() { }
 
     public static StackPane crear(Consumer<ConfiguracionPartida> alJugar) {
+        return crear("THE BINDING OF WACHIN", "JUGAR", null, alJugar);
+    }
+
+    public static StackPane crearReintento(ConfiguracionPartida inicial,
+            Consumer<ConfiguracionPartida> alJugar) {
+        return crear("GAME OVER", "VOLVER A INTENTAR", inicial, alJugar);
+    }
+
+    private static StackPane crear(String tituloTexto, String botonTexto,
+            ConfiguracionPartida inicial, Consumer<ConfiguracionPartida> alJugar) {
         StackPane raiz = new StackPane();
         raiz.setStyle("-fx-background-color: #141414;");
 
-        Text titulo = new Text("THE BINDING OF WACHIN");
+        Text titulo = new Text(tituloTexto);
         titulo.setFill(Color.WHITE);
         titulo.setFont(Font.font("Arial", 34));
 
         Text etiquetaPersonaje = etiqueta("PERSONAJE");
         ComboBox<ConfiguracionPartida.Personaje> personajes = new ComboBox<>();
         personajes.getItems().setAll(ConfiguracionPartida.Personaje.values());
-        personajes.setValue(ConfiguracionPartida.Personaje.WACHIN);
+        personajes.setValue(inicial == null ? ConfiguracionPartida.Personaje.WACHIN : inicial.getPersonaje());
         personajes.setPrefWidth(250);
 
         Text etiquetaProyectil = etiqueta("TIPO DE PROYECTIL");
         ComboBox<ConfiguracionPartida.TipoProyectil> proyectiles = new ComboBox<>();
         proyectiles.getItems().setAll(ConfiguracionPartida.TipoProyectil.values());
-        proyectiles.setValue(ConfiguracionPartida.TipoProyectil.LAGRIMA);
+        proyectiles.setValue(inicial == null ? ConfiguracionPartida.TipoProyectil.LAGRIMA : inicial.getTipoProyectil());
         proyectiles.setPrefWidth(250);
 
-        Button jugar = new Button("JUGAR");
+        Button jugar = new Button(botonTexto);
         jugar.setFont(Font.font("Arial", 20));
         jugar.setPrefWidth(250);
         jugar.setPrefHeight(52);

@@ -20,11 +20,13 @@ public class EnemigoVisual {
     private final Circle avisoEmbestida;
     private final boolean esJefe;
     private final double velocidad;
-    private final double radio;
+    private final double radioColision;
     private final double tamanoVisual;
 
     private double x;
     private double y;
+    private double xAnterior;
+    private double yAnterior;
     private double tiempoFase;
     private double direccionDashX;
     private double direccionDashY;
@@ -35,15 +37,20 @@ public class EnemigoVisual {
         this.enemigo = enemigo;
         this.x = x;
         this.y = y;
+        this.xAnterior = x;
+        this.yAnterior = y;
         this.esJefe = enemigo instanceof Jefe;
         this.velocidad = enemigo.getVelocidad();
-        this.radio = esJefe ? 43 : 29;
+        this.radioColision = esJefe ? 34 : 22;
         this.tamanoVisual = esJefe ? 112 : 68;
         // El jefe espera antes de su primera embestida para que el jugador pueda posicionarse.
         this.tiempoFase = esJefe ? 2.4 : 0;
 
         // Poli es el unico sprite normal; el jefe usa el mismo asset a mayor escala.
-        this.visual = AssetVisual.crear("assets/images/enemies/poli.png", x, y,
+        String rutaAsset = esJefe
+                ? "assets/images/bosses/palinni.png"
+                : "assets/images/enemies/poli.png";
+        this.visual = AssetVisual.crear(rutaAsset, x, y,
                 tamanoVisual, tamanoVisual,
                 esJefe ? Color.PURPLE : Color.CRIMSON,
                 esJefe ? Color.GOLD : Color.BLACK,
@@ -75,6 +82,8 @@ public class EnemigoVisual {
 
     public void actualizar(double jugadorX, double jugadorY, double deltaTiempo) {
         if (deltaTiempo <= 0) return;
+        xAnterior = x;
+        yAnterior = y;
         if (esJefe) actualizarJefe(jugadorX, jugadorY, deltaTiempo);
         else moverHacia(jugadorX, jugadorY, velocidad, deltaTiempo);
         limitarMovimiento();
@@ -160,9 +169,7 @@ public class EnemigoVisual {
         barraVida.setFill(porcentaje <= 0.25 ? Color.RED : (esJefe ? Color.GOLD : Color.LIMEGREEN));
     }
 
-    public boolean tocaJugador(double jugadorX, double jugadorY) {
-        return Math.hypot(jugadorX - x, jugadorY - y) < radio + 40;
-    }
+    public double getRadioColision() { return radioColision; }
 
     /** El contacto durante el dash suma el dano especial del jefe. */
     public int getDanoContacto() {
@@ -177,4 +184,6 @@ public class EnemigoVisual {
     public Node getVisual() { return grupo; }
     public double getX() { return x; }
     public double getY() { return y; }
+    public double getXAnterior() { return xAnterior; }
+    public double getYAnterior() { return yAnterior; }
 }

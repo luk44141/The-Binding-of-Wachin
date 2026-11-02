@@ -9,6 +9,7 @@ import com.wachin.model.Jefe;
 import com.wachin.model.Jugador;
 import com.wachin.model.Sala;
 import com.wachin.service.CombateService;
+import com.wachin.service.ColisionService;
 import com.wachin.service.JuegoService;
 import com.wachin.service.JugadorService;
 import com.wachin.service.SalaService;
@@ -25,14 +26,12 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class PartidaController {
 
@@ -43,11 +42,11 @@ public class PartidaController {
 
     private static final double VELOCIDAD_JUGADOR = 225;
     private static final double VELOCIDAD_PROYECTIL = 430;
-    private static final double RADIO_IMPACTO = 28;
     private static final double TIEMPO_INVULNERABLE = 0.45;
 
     private final PartidaView vista;
     private final ConfiguracionPartida configuracion;
+    private final Consumer<ConfiguracionPartida> alPerder;
 
     private final Set<KeyCode> teclasPresionadas = new HashSet<>();
     private final List<Proyectil> proyectiles = new ArrayList<>();
@@ -55,49 +54,18 @@ public class PartidaController {
 
     private final JuegoService juegoService = new JuegoService();
     private final CombateService combateService = new CombateService();
+    private final ColisionService colisionService = new ColisionService();
     private final JugadorService jugadorService = new JugadorService();
     private final SalaService salaService = new SalaService();
+    private final MapaController mapaController = new MapaController();
     private final Random random = new Random();
-
-    /*
-     * Cada nodo representa una sala concreta.
-     * Las conexiones son unidireccionales: no se crean puertas
-     * que permitan regresar a una sala anterior.
-     */
-    private static class NodoSala {
-        final int id;
-        final int profundidad;
-        final boolean esJefe;
-        final int mapa;
-
-        final Map<PuertaVisual.Direccion, NodoSala> destinos =
-                new EnumMap<>(PuertaVisual.Direccion.class);
-
-        NodoSala(
-                int id,
-                int profundidad,
-                boolean esJefe,
-                int mapa) {
-
-            this.id = id;
-            this.profundidad = profundidad;
-            this.esJefe = esJefe;
-            this.mapa = mapa;
-        }
-    }
-
-    private final Set<Integer> salasVisitadas = new HashSet<>();
-    private final Map<Integer, NodoSala> jefesPorMapa = new java.util.HashMap<>();
-
-    private NodoSala salaActual;
-    private int siguienteIdSala = 1;
-    private int siguienteNumeroSala = 1;
-    private int numeroSalaActual = 1;
 
     private Node jugadorVisual;
 
     private double jugadorX = 500;
     private double jugadorY = 350;
+    private double jugadorXAnterior = 500;
+    private double jugadorYAnterior = 350;
     private double tiempoInvulnerable;
 
     private long ultimoTiempo;
@@ -109,19 +77,19 @@ public class PartidaController {
 
     public PartidaController(
         PartidaView vista,
-        ConfiguracionPartida configuracion) {
+        ConfiguracionPartida configuracion,
+        Consumer<ConfiguracionPartida> alPerder) {
 
     this.vista = vista;
     this.configuracion = configuracion != null
             ? configuracion
             : new ConfiguracionPartida(null, null);
+    this.alPerder = alPerder;
     }
 
     public void iniciar() {
         crearJugador();
-
-        salaActual = crearNodo(1, false, 1);
-        entrarEnSala(salaActual, null);
+        prepararSala(mapaController.iniciar());
 
         iniciarGameLoop();
     }
@@ -225,163 +193,29 @@ public class PartidaController {
         }
     }
 
-    private NodoSala crearNodo(
-            int profundidad,
-            boolean esJefe,
-            int mapa) {
-
-        return new NodoSala(
-                siguienteIdSala++,
-                profundidad,
-                esJefe,
-                mapa
-        );
-    }
-
-    private NodoSala obtenerJefe(int mapa) {
-        return jefesPorMapa.computeIfAbsent(
-                mapa,
-                m -> crearNodo(5, true, m)
-        );
-    }
-
-    private PuertaVisual.Direccion opuesta(
-            PuertaVisual.Direccion direccion) {
-
-        switch (direccion) {
-            case ARRIBA:
-                return PuertaVisual.Direccion.ABAJO;
-            case ABAJO:
-                return PuertaVisual.Direccion.ARRIBA;
-            case IZQUIERDA:
-                return PuertaVisual.Direccion.DERECHA;
-            case DERECHA:
-                return PuertaVisual.Direccion.IZQUIERDA;
-            default:
-                throw new IllegalArgumentException(
-                        "Dirección inválida."
-                );
-        }
-    }
-
-    /*
-     * Elige direcciones al azar, excluyendo el lado por el que
-     * entra el jugador. Las salidas se guardan en el nodo.
-     */
-    private List<PuertaVisual.Direccion> elegirDirecciones(
-            PuertaVisual.Direccion entrada,
-            int cantidad) {
-
-        List<PuertaVisual.Direccion> disponibles =
-                new ArrayList<>(
-                        List.of(PuertaVisual.Direccion.values())
-                );
-
-        if (entrada != null) {
-            disponibles.remove(entrada);
-        }
-
-        Collections.shuffle(disponibles, random);
-
-        return new ArrayList<>(
-                disponibles.subList(
-                        0,
-                        Math.min(cantidad, disponibles.size())
-                )
-        );
-    }
-
-    /*
-     * Cada mapa tiene cuatro salas normales y un jefe.
-     * Las salas 1-3 tienen dos salidas hacia la siguiente profundidad;
-     * la sala 4 conduce obligatoriamente al jefe del mapa.
-     * Tras derrotar al jefe se pasa a la sala 1 del mapa siguiente.
-     */
-    private void prepararSalidas(
-            NodoSala nodo,
-            PuertaVisual.Direccion entrada) {
-
-        if (!nodo.destinos.isEmpty()) {
-            return;
-        }
-
-        if (nodo.esJefe) {
-            PuertaVisual.Direccion salida =
-                    elegirDirecciones(entrada, 1).get(0);
-
-            NodoSala siguienteMapa = crearNodo(
-                    1,
-                    false,
-                    nodo.mapa + 1
-            );
-
-            nodo.destinos.put(salida, siguienteMapa);
-            return;
-        }
-
-        List<PuertaVisual.Direccion> direcciones =
-                elegirDirecciones(entrada, nodo.profundidad >= 4 ? 1 : 2);
-
-        if (nodo.profundidad >= 4) {
-            PuertaVisual.Direccion direccionJefe = direcciones.get(0);
-            nodo.destinos.put(direccionJefe, obtenerJefe(nodo.mapa));
-            return;
-        }
-
-        for (PuertaVisual.Direccion direccion : direcciones) {
-            NodoSala siguiente = crearNodo(
-                    nodo.profundidad + 1,
-                    false,
-                    nodo.mapa
-            );
-            nodo.destinos.put(direccion, siguiente);
-        }
-    }
-
-    private void entrarEnSala(
-            NodoSala nodo,
-            PuertaVisual.Direccion salidaAnterior) {
-
-        if (salasVisitadas.contains(nodo.id)) {
-            vista.actualizarEstado("ESA SALA YA FUE VISITADA");
-            return;
-        }
-
+    private void prepararSala(MapaController.SalaNodo nodo) {
         limpiarSalaAnterior();
-
-        if (salidaAnterior != null) {
-            colocarJugadorEnEntrada(salidaAnterior);
-        }
-
-        salaActual = nodo;
-        numeroSalaActual = siguienteNumeroSala++;
-        salasVisitadas.add(nodo.id);
-
-        prepararSalidas(
-                nodo,
-                salidaAnterior == null ? null : opuesta(salidaAnterior)
-        );
-
+        if (nodo == null) return;
         puertasAbiertas = false;
 
         Sala sala = salaService.generarSala(
-                nodo.id,
-                nodo.profundidad,
-                nodo.esJefe
+                nodo.getId(),
+                nodo.getProfundidad(),
+                nodo.esJefe()
         );
 
         vista.configurarSala(
                 sala,
-                nodo.mapa,
-                nodo.esJefe
+                nodo.getMapa(),
+                nodo.esJefe()
         );
 
         vista.configurarSalidas(
-                nodo.destinos.keySet(),
+                nodo.getDireccionesSalida(),
                 false
         );
 
-        if (nodo.esJefe) {
+        if (nodo.esJefe()) {
             crearJefe();
         } else {
             for (Enemigo enemigo : sala.getEnemigos()) {
@@ -405,8 +239,8 @@ public class PartidaController {
 
     private void crearJefe() {
         Jefe jefe = salaService.generarJefe(
-                salaActual.id,
-                salaActual.mapa
+                mapaController.getActual().getId(),
+                mapaController.getActual().getMapa()
         );
 
         juegoService.agregarEnemigo(jefe);
@@ -463,6 +297,8 @@ public class PartidaController {
         }
 
         AssetVisual.moverAlCentro(jugadorVisual, jugadorX, jugadorY, 54, 54);
+        jugadorXAnterior = jugadorX;
+        jugadorYAnterior = jugadorY;
     }
 
     private double[] generarPosicionEnemigo() {
@@ -475,7 +311,7 @@ public class PartidaController {
             y = 130 + random.nextDouble() * 440;
             intentos++;
         } while (
-                calcularDistancia(x, y, jugadorX, jugadorY) < 125
+                colisionService.distancia(x, y, jugadorX, jugadorY) < 125
                         && intentos < 100
         );
 
@@ -496,6 +332,7 @@ public class PartidaController {
         direccionY * VELOCIDAD_PROYECTIL,
         jugador.getDano(),
         configuracion.getRutaProyectil()
+        , direccionX, direccionY
         );
 
         proyectiles.add(proyectil);
@@ -528,6 +365,7 @@ public class PartidaController {
                             tiempoInvulnerable - deltaTiempo
                     );
                 }
+                vista.actualizarIndicadorDanio(tiempoInvulnerable > 0);
 
                 actualizarJugador(deltaTiempo);
 
@@ -554,6 +392,8 @@ public class PartidaController {
             return;
         }
 
+        jugadorXAnterior = jugadorX;
+        jugadorYAnterior = jugadorY;
         double direccionX = 0;
         double direccionY = 0;
 
@@ -615,13 +455,10 @@ public class PartidaController {
             return false;
         }
 
-        NodoSala destino = salaActual.destinos.get(direccion);
-
-        if (destino == null || salasVisitadas.contains(destino.id)) {
-            return false;
-        }
-
-        entrarEnSala(destino, direccion);
+        MapaController.SalaNodo destino = mapaController.entrarPor(direccion);
+        if (destino == null) return false;
+        colocarJugadorEnEntrada(direccion);
+        prepararSala(destino);
         return true;
     }
 
@@ -634,9 +471,10 @@ public class PartidaController {
             enemigoVisual.actualizar(jugadorX, jugadorY, deltaTiempo);
 
             if (tiempoInvulnerable <= 0
-                    && enemigoVisual.tocaJugador(jugadorX, jugadorY)) {
+                    && colisionService.colisionaJugadorEnemigo(jugadorXAnterior,
+                            jugadorYAnterior, jugadorX, jugadorY, enemigoVisual, 25)) {
 
-                recibirDanoJugador(enemigoVisual.getEnemigo().getDano());
+                recibirDanoJugador(enemigoVisual.getDanoContacto());
                 tiempoInvulnerable = TIEMPO_INVULNERABLE;
                 break;
             }
@@ -648,13 +486,14 @@ public class PartidaController {
 
         if (jugador != null) {
             double multiplicador = 1.50
-                    + Math.min(0.90, (salaActual.mapa - 1) * 0.12)
-                    + Math.min(0.40, (salaActual.profundidad - 1) * 0.08);
+                    + Math.min(0.90, (mapaController.getActual().getMapa() - 1) * 0.12)
+                    + Math.min(0.40, (mapaController.getActual().getProfundidad() - 1) * 0.08);
             int danoAumentado = Math.max(
                     dano + 1,
                     (int) Math.ceil(dano * multiplicador)
             );
             jugador.recibirDano(danoAumentado);
+            vista.mostrarDanio();
         }
     }
 
@@ -682,17 +521,7 @@ public class PartidaController {
         for (EnemigoVisual enemigoVisual :
                 new ArrayList<>(enemigosVisuales)) {
 
-            double distancia = calcularDistancia(
-                    proyectil.getX(),
-                    proyectil.getY(),
-                    enemigoVisual.getX(),
-                    enemigoVisual.getY()
-            );
-
-            double radioExtra =
-                    enemigoVisual.getEnemigo() instanceof Jefe ? 16 : 0;
-
-            if (distancia < RADIO_IMPACTO + radioExtra) {
+            if (colisionService.colisionaProyectilEnemigo(proyectil, enemigoVisual)) {
                 atacarEnemigo(enemigoVisual);
 
                 vista.quitarProyectil(proyectil);
@@ -722,10 +551,8 @@ public class PartidaController {
     private void verificarEstado() {
         if (!juegoService.jugadorEstaVivo()) {
             juegoTerminado = true;
-            vista.actualizarEstado(
-                    "GAME OVER - MAPA " + salaActual.mapa
-            );
             detener();
+            alPerder.accept(configuracion);
             return;
         }
 
@@ -735,20 +562,20 @@ public class PartidaController {
             puertasAbiertas = true;
 
             vista.configurarSalidas(
-                    salaActual.destinos.keySet(),
+                    mapaController.getActual().getDireccionesSalida(),
                     true
             );
         }
 
         if (!salaLimpia) {
             vista.actualizarEstado(
-                    salaActual.esJefe
-                            ? "DERROTÁ AL JEFE DEL MAPA " + salaActual.mapa
+                    mapaController.getActual().esJefe()
+                            ? "DERROTÁ AL JEFE DEL MAPA " + mapaController.getActual().getMapa()
                             : "DERROTÁ A TODOS LOS ENEMIGOS"
             );
         } else {
             vista.actualizarEstado(
-                    salaActual.esJefe
+                    mapaController.getActual().esJefe()
                             ? "JEFE DERROTADO - ELEGÍ LA SALIDA"
                             : "SALA LIMPIA - ELEGÍ UNA PUERTA"
             );
@@ -756,29 +583,18 @@ public class PartidaController {
     }
 
     private void actualizarHUD() {
-        if (salaActual == null) {
+        if (mapaController.getActual() == null) {
             return;
         }
 
         vista.actualizarHUD(
                 juegoService.getJugador(),
                 enemigosVisuales.size(),
-                salaActual.mapa,
-                numeroSalaActual,
-                salaActual.profundidad,
-                salaActual.esJefe
+                mapaController.getActual().getMapa(),
+                mapaController.getNumeroSala(),
+                mapaController.getActual().getProfundidad(),
+                mapaController.getActual().esJefe()
         );
     }
 
-    private double calcularDistancia(
-            double x1,
-            double y1,
-            double x2,
-            double y2) {
-
-        double dx = x1 - x2;
-        double dy = y1 - y2;
-
-        return Math.sqrt(dx * dx + dy * dy);
-    }
 }
