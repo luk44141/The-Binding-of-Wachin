@@ -17,9 +17,11 @@ Ejemplo de un prompt a chatgpt para poder definir como implementar algo:
 
 Quiero que cuando comience la partida se muestre en pantalla el sprite de Wachin que tengo guardado en la carpeta de assets, no tengo claro cual es la mejor manera de implementarlo, quiero que me expliques como podria cargar la imagen, mostrarla en pantalla y actualizar su posicion cuando el jugador se mueva, tambien quiero organizar correctamente la carpeta y en que clase conviene colocar cada responsabilidad para mantener separada la logica del jugador y lo visual
 
-1) ESTRUCTURA GENERAL DEL PROYECTO
+## 1. ESTRUCTURA GENERAL DEL PROYECTO
 
-El codigo fuente principal se encuentra en:
+El código fuente principal se encuentra en:
+
+```text
 src/
 └── main/
     ├── java/
@@ -75,6 +77,7 @@ src/
                 ├── enemies/
                 ├── bosses/
                 └── projectiles/
+```
 
 Cada paquete agrupa clases que cumplen una funcion relacionada. Esto evita que todo el codigo este concentrado en una sola clase y permite modificar una parte del proyecto sin tener que reescribir las demas.
 
