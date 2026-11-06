@@ -102,7 +102,7 @@ public class PartidaView {
         titulo.setY(30);
         titulo.setFill(Color.WHITE);
         titulo.setFont(Font.font("Arial", 20));
-        Text controles = new Text("WASD: mover | FLECHAS: disparar | ESC: pausa");
+        Text controles = new Text("WASD: mover | FLECHAS: disparar");
         controles.setX(540);
         controles.setY(30);
         controles.setFill(Color.LIGHTGRAY);

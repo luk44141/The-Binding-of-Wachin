@@ -1,0 +1,10 @@
+-Sprite de paredes, piso y puerta (2 variantes sala jefe y normal)
+-3 Jefes diferentes (1 con cuernos cada 20 salas con mas complejidad)
+-Disparar en una dirección y no en todas 
+-Sprite de enemigos diferentes(2 mas mínimo)con variantes de ataque (Algunos te van a meele y otros te tiran a rango)
+-Agregar invocaciones(3) que disparen proyectiles(nuevos)
+Gusano Murcielago Robot(que dispara laser)(Gusano tanquea damage, Murcielago va a meele y robot dispara un laser)
+-En 10 salas hacer que en el primer jefe te sume vida y aumente y en otras 5 en el otro jefe que te de un mazo para elegir cartas y te de una mejora (Sprites)
+-Agregar un menú de pausa donde puedas ver tus cartas y tus invocaciones y guardar y cargar partida
+-Hacer que los enemigos y wachin no puedan atravesar a sus enemigos y colisionen y que los enemigos se vayan dispersando para hacerlo mas difícil
+-Agregar Animaciones (Caminar,disparar) (CAPAZ SI CAPAZ NO)

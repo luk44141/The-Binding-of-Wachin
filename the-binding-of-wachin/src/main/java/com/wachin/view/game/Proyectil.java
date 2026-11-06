@@ -2,7 +2,6 @@ package com.wachin.view.game;
 
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.image.ImageView;
 
 /**
  * Representa un disparo, conserva su trayectoria y actualiza su posición visual.
