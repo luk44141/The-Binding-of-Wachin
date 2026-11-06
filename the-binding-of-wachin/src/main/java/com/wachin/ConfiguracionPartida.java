@@ -72,7 +72,7 @@ public final class ConfiguracionPartida {
      */
     public ConfiguracionPartida(Personaje personaje, TipoProyectil tipoProyectil) {
         this.personaje = personaje == null ? Personaje.WACHIN : personaje;
-        this.tipoProyectil = tipoProyectil == null ? TipoProyectil.LAGRIMA : tipoProyectil;
+        this.tipoProyectil = tipoProyectil == null ? TipoProyectil.GOTA : tipoProyectil;
     }
 
     /**

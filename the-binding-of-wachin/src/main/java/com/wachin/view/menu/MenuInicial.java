@@ -56,7 +56,7 @@ public final class MenuInicial {
         Text etiquetaProyectil = etiqueta("TIPO DE PROYECTIL");
         ComboBox<ConfiguracionPartida.TipoProyectil> proyectiles = new ComboBox<>();
         proyectiles.getItems().setAll(ConfiguracionPartida.TipoProyectil.values());
-        proyectiles.setValue(inicial == null ? ConfiguracionPartida.TipoProyectil.LAGRIMA : inicial.getTipoProyectil());
+        proyectiles.setValue(inicial == null ? ConfiguracionPartida.TipoProyectil.GOTA : inicial.getTipoProyectil());
         proyectiles.setPrefWidth(250);
 
         Button jugar = new Button(botonTexto);

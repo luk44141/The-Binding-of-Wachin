@@ -67,6 +67,7 @@ public class PartidaController {
      * Constante que define tiempo invulnerable para este componente.
      */
     private static final double TIEMPO_INVULNERABLE = 0.45;
+    private static final double TAMANO_JUGADOR = 64;
 
     /**
      * Guarda vista para que la clase mantenga su estado interno.
@@ -268,8 +269,8 @@ public class PartidaController {
                     ruta,
                     jugadorX,
                     jugadorY,
-                    90,
-                    90,
+                    TAMANO_JUGADOR,
+                    TAMANO_JUGADOR,
                     Color.BEIGE,
                     Color.BLACK,
                     3
@@ -404,7 +405,8 @@ public class PartidaController {
                 break;
         }
 
-        AssetVisual.moverAlCentro(jugadorVisual, jugadorX, jugadorY, 54, 54);
+        AssetVisual.moverAlCentro(jugadorVisual, jugadorX, jugadorY,
+                TAMANO_JUGADOR, TAMANO_JUGADOR);
         jugadorXAnterior = jugadorX;
         jugadorYAnterior = jugadorY;
     }
@@ -554,7 +556,8 @@ public class PartidaController {
 
         limitarJugador();
 
-        AssetVisual.moverAlCentro(jugadorVisual, jugadorX, jugadorY, 54, 54);
+        AssetVisual.moverAlCentro(jugadorVisual, jugadorX, jugadorY,
+                TAMANO_JUGADOR, TAMANO_JUGADOR);
     }
 
     /**
