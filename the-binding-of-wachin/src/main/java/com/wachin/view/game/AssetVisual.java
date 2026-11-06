@@ -9,11 +9,20 @@ import javafx.scene.shape.Circle;
 import java.io.InputStream;
 
 /** Carga assets del classpath y conserva un visual de respaldo si falta el PNG. */
+/**
+ * Carga recursos gráficos del classpath y crea figuras de respaldo cuando faltan imágenes.
+ */
 public final class AssetVisual {
 
+    /**
+     * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
+     */
     private AssetVisual() {
     }
 
+    /**
+     * Construye los controles del menú y conecta la acción principal con la selección del usuario.
+     */
     public static Node crear(
             String ruta,
             double centroX,
@@ -54,6 +63,9 @@ public final class AssetVisual {
         return respaldo;
     }
 
+    /**
+     * Mueve la imagen o figura para que su centro coincida con las coordenadas indicadas.
+     */
     public static void moverAlCentro(Node visual, double centroX, double centroY, double ancho, double alto) {
         if (visual instanceof ImageView) {
             ImageView imagen = (ImageView) visual;

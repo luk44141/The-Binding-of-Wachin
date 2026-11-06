@@ -18,8 +18,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Construye y actualiza el escenario, el HUD, las puertas, la pausa y los avisos visuales.
+ */
 public class PartidaView {
+    /**
+     * Constante que define ancho para este componente.
+     */
     public static final int ANCHO = 1000;
+    /**
+     * Constante que define alto para este componente.
+     */
     public static final int ALTO = 700;
 
     private final Pane raiz = new Pane();
@@ -37,10 +46,19 @@ public class PartidaView {
     private final Rectangle fondoVidaJefe = new Rectangle(330, 48, 340, 13);
     private final Rectangle barraVidaJefe = new Rectangle(330, 48, 340, 13);
     private final List<PuertaVisual> puertas = new ArrayList<>();
+    /**
+     * Constante que define menupausa para este componente.
+     */
     private StackPane menuPausa;
+    /**
+     * Constante que define jugadorvisual para este componente.
+     */
     private Node jugadorVisual;
     private final Text avisoDanio = crearTexto(430, 145);
 
+    /**
+     * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
+     */
     public PartidaView() {
         raiz.setFocusTraversable(true);
         crearEscenario();
@@ -53,6 +71,9 @@ public class PartidaView {
         raiz.getChildren().add(avisoDanio);
     }
 
+    /**
+     * Configura los colores y agrega el fondo y el área de juego a la raíz.
+     */
     private void crearEscenario() {
         fondo.setFill(Color.rgb(18, 18, 22));
         salaVisual.setFill(Color.rgb(52, 52, 58));
@@ -61,6 +82,9 @@ public class PartidaView {
         raiz.getChildren().addAll(fondo, salaVisual);
     }
 
+    /**
+     * Crea una puerta visual por dirección y la agrega al escenario.
+     */
     private void crearPuertas() {
         for (PuertaVisual.Direccion direccion : PuertaVisual.Direccion.values()) {
             PuertaVisual puerta = new PuertaVisual(direccion);
@@ -69,6 +93,9 @@ public class PartidaView {
         }
     }
 
+    /**
+     * Construye títulos, controles, indicadores y barra de vida del jefe.
+     */
     private void crearHUD() {
         Text titulo = new Text("THE BINDING OF WACHIN");
         titulo.setX(20);
@@ -98,6 +125,9 @@ public class PartidaView {
         actualizarEstado("");
     }
 
+    /**
+     * Construye un nodo Text en las coordenadas indicadas.
+     */
     private Text crearTexto(double x, double y) {
         Text texto = new Text();
         texto.setX(x);
@@ -106,8 +136,14 @@ public class PartidaView {
         return texto;
     }
 
+    /**
+     * Devuelve el nodo raíz para incorporarlo a una escena JavaFX.
+     */
     public Pane getRaiz() { return raiz; }
 
+    /**
+     * Actualiza el aspecto de la sala y reinicia puertas y elementos visuales previos.
+     */
     public void configurarSala(Sala sala, int numeroMapa, boolean esSalaJefe) {
         Color[] colores = {Color.rgb(52, 52, 58), Color.rgb(58, 45, 48),
                 Color.rgb(42, 52, 49), Color.rgb(48, 45, 65), Color.rgb(65, 52, 38)};
@@ -126,6 +162,9 @@ public class PartidaView {
         actualizarEstado(esSalaJefe ? "JEFE DEL MAPA " + numeroMapa : "MAPA " + numeroMapa);
     }
 
+    /**
+     * Muestra las puertas disponibles y determina si se ven abiertas.
+     */
     public void configurarSalidas(Set<PuertaVisual.Direccion> salidas, boolean abiertas) {
         for (PuertaVisual puerta : puertas) {
             boolean seleccionada = salidas.contains(puerta.getDireccion());
@@ -134,6 +173,9 @@ public class PartidaView {
         }
     }
 
+    /**
+     * Muestra nombre y barra del jefe y sincroniza su vida.
+     */
     public void mostrarBarraJefe(Enemigo jefe) {
         if (jefe == null) return;
         tituloJefe.setText(jefe.getNombre() + "  " + jefe.getVida() + "/" + jefe.getVidaMaxima());
@@ -143,6 +185,9 @@ public class PartidaView {
         actualizarBarraJefe(jefe);
     }
 
+    /**
+     * Calcula la proporción de vida y actualiza ancho, color y texto.
+     */
     public void actualizarBarraJefe(Enemigo jefe) {
         if (jefe == null) return;
         double porcentaje = Math.max(0, Math.min(1,
@@ -152,13 +197,22 @@ public class PartidaView {
         tituloJefe.setText(jefe.getNombre() + "  " + jefe.getVida() + "/" + jefe.getVidaMaxima());
     }
 
+    /**
+     * Oculta el nombre y las figuras de la barra del jefe.
+     */
     public void ocultarBarraJefe() {
         tituloJefe.setVisible(false);
         fondoVidaJefe.setVisible(false);
         barraVidaJefe.setVisible(false);
     }
 
+    /**
+     * Guarda la referencia visual del jugador y agrega su nodo a la escena.
+     */
     public void agregarJugador(Node jugador) { jugadorVisual = jugador; raiz.getChildren().add(jugador); }
+    /**
+     * Muestra el aviso de daño y aplica un destello al sprite del jugador.
+     */
     public void mostrarDanio() {
         avisoDanio.setVisible(true);
         if (jugadorVisual != null) {
@@ -169,15 +223,33 @@ public class PartidaView {
             jugadorVisual.setEffect(efecto);
         }
     }
+    /**
+     * Mantiene el aviso durante la invulnerabilidad y retira el efecto al terminar.
+     */
     public void actualizarIndicadorDanio(boolean invulnerable) {
         if (jugadorVisual != null && !invulnerable) jugadorVisual.setEffect(null);
         avisoDanio.setVisible(invulnerable);
     }
+    /**
+     * Agrega el grupo visual del enemigo al escenario.
+     */
     public void agregarEnemigo(EnemigoVisual enemigo) { raiz.getChildren().add(enemigo.getVisual()); }
+    /**
+     * Retira el grupo visual del enemigo del escenario.
+     */
     public void quitarEnemigo(EnemigoVisual enemigo) { raiz.getChildren().remove(enemigo.getVisual()); }
+    /**
+     * Agrega el nodo del proyectil a la escena.
+     */
     public void agregarProyectil(Proyectil proyectil) { raiz.getChildren().add(proyectil.getVisual()); }
+    /**
+     * Retira el nodo del proyectil de la escena.
+     */
     public void quitarProyectil(Proyectil proyectil) { raiz.getChildren().remove(proyectil.getVisual()); }
 
+    /**
+     * Actualiza textos de vida, experiencia, nivel, mapa, sala y dificultad.
+     */
     public void actualizarHUD(Jugador jugador, int cantidadEnemigos, int numeroMapa,
                               int numeroSala, int dificultad, boolean esSalaJefe) {
         if (jugador == null) return;
@@ -190,12 +262,18 @@ public class PartidaView {
         dificultadTexto.setText("DIF: " + dificultad);
     }
 
+    /**
+     * Cambia el mensaje de estado mostrado en pantalla.
+     */
     public void actualizarEstado(String estado) {
         estadoTexto.setText(estado);
         estadoTexto.setFill(Color.WHITE);
         estadoTexto.setFont(Font.font("Arial", 20));
     }
 
+    /**
+     * Construye el panel de pausa y conecta el botón con la acción de reanudar.
+     */
     public void mostrarPausa(Runnable alReanudar) {
         if (menuPausa != null) return;
         Text titulo = new Text("JUEGO EN PAUSA");
@@ -218,6 +296,9 @@ public class PartidaView {
         raiz.getChildren().add(menuPausa);
     }
 
+    /**
+     * Retira el panel de pausa de la raíz de la vista.
+     */
     public void ocultarPausa() {
         if (menuPausa != null) {
             raiz.getChildren().remove(menuPausa);

@@ -11,18 +11,33 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import java.util.function.Consumer;
 
+/**
+ * Construye el menú inicial y entrega al programa la configuración elegida.
+ */
 public final class MenuInicial {
+    /**
+     * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
+     */
     private MenuInicial() { }
 
+    /**
+     * Construye los controles del menú y conecta la acción principal con la selección del usuario.
+     */
     public static StackPane crear(Consumer<ConfiguracionPartida> alJugar) {
         return crear("THE BINDING OF WACHIN", "JUGAR", null, alJugar);
     }
 
+    /**
+     * Construye el menú de reintento y carga las opciones de la partida recién perdida.
+     */
     public static StackPane crearReintento(ConfiguracionPartida inicial,
             Consumer<ConfiguracionPartida> alJugar) {
         return crear("GAME OVER", "VOLVER A INTENTAR", inicial, alJugar);
     }
 
+    /**
+     * Construye los controles del menú y conecta la acción principal con la selección del usuario.
+     */
     private static StackPane crear(String tituloTexto, String botonTexto,
             ConfiguracionPartida inicial, Consumer<ConfiguracionPartida> alJugar) {
         StackPane raiz = new StackPane();
@@ -61,10 +76,16 @@ public final class MenuInicial {
     }
 
     /** Mantiene compatibilidad con codigo que aun use el menu sin opciones. */
+    /**
+     * Construye los controles del menú y conecta la acción principal con la selección del usuario.
+     */
     public static StackPane crear(Runnable alJugar) {
         return crear(configuracion -> alJugar.run());
     }
 
+    /**
+     * Ejecuta la operación etiqueta dentro de la responsabilidad de esta clase.
+     */
     private static Text etiqueta(String valor) {
         Text texto = new Text(valor);
         texto.setFill(Color.LIGHTGRAY);

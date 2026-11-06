@@ -3,8 +3,14 @@ package com.wachin.view.game;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+/**
+ * Representa una salida y muestra visualmente si está abierta o cerrada.
+ */
 public class PuertaVisual {
 
+    /**
+     * Define una opción cerrada disponible para la configuración del juego.
+     */
     public enum Direccion {
         ARRIBA,
         ABAJO,
@@ -12,11 +18,23 @@ public class PuertaVisual {
         DERECHA
     }
 
+    /**
+     * Guarda direccion para que la clase mantenga su estado interno.
+     */
     private final Direccion direccion;
+    /**
+     * Guarda visual para que la clase mantenga su estado interno.
+     */
     private final Rectangle visual;
 
+    /**
+     * Guarda abierta para que la clase mantenga su estado interno.
+     */
     private boolean abierta;
 
+    /**
+     * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
+     */
     public PuertaVisual(Direccion direccion) {
         this.direccion = direccion;
 
@@ -49,6 +67,9 @@ public class PuertaVisual {
         setAbierta(false);
     }
 
+    /**
+     * Actualiza abierta mediante el método de acceso de la clase.
+     */
     public void setAbierta(boolean abierta) {
         this.abierta = abierta;
 
@@ -59,14 +80,23 @@ public class PuertaVisual {
         }
     }
 
+    /**
+     * Comprueba esta condición a partir del estado actual y devuelve el resultado.
+     */
     public boolean estaAbierta() {
         return abierta;
     }
 
+    /**
+     * Devuelve direccion sin exponer directamente el atributo.
+     */
     public Direccion getDireccion() {
         return direccion;
     }
 
+    /**
+     * Devuelve nodo visual sin exponer directamente el atributo.
+     */
     public Rectangle getVisual() {
         return visual;
     }

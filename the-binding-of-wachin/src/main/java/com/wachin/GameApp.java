@@ -8,12 +8,24 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Arranca la aplicación JavaFX, muestra el menú y conecta sus opciones con el ciclo de vida de la partida.
+ */
 public class GameApp extends Application {
 
+    /**
+     * Constante que define partidacontroller para este componente.
+     */
     private PartidaController partidaController;
+    /**
+     * Guarda stage para que la clase mantenga su estado interno.
+     */
     private Stage stage;
 
     @Override
+    /**
+     * Configura la ventana JavaFX, construye la escena inicial y muestra el menú.
+     */
     public void start(Stage stage) {
         this.stage = stage;
         stage.setTitle("The Binding of Wachin");
@@ -31,6 +43,9 @@ public class GameApp extends Application {
         stage.show();
     }
 
+    /**
+     * Crea una vista y un controlador nuevos, enlaza los controles y arranca la partida elegida.
+     */
     private void iniciarPartida(
             Stage stage,
             ConfiguracionPartida configuracion) {
@@ -69,6 +84,9 @@ public class GameApp extends Application {
         escenaPartida.getRoot().requestFocus();
     }
 
+    /**
+     * Muestra el menú de derrota y conecta la configuración elegida con una nueva partida.
+     */
     private void mostrarReintento(ConfiguracionPartida configuracion) {
         stage.setScene(new Scene(MenuInicial.crearReintento(configuracion,
                 nuevaConfiguracion -> iniciarPartida(stage, nuevaConfiguracion)),
@@ -76,12 +94,18 @@ public class GameApp extends Application {
     }
 
     @Override
+    /**
+     * Detiene la partida activa antes de cerrar la aplicación.
+     */
     public void stop() {
         if (partidaController != null) {
             partidaController.detener();
         }
     }
 
+    /**
+     * Inicia el programa auxiliar, prueba la conexión a la base de datos e informa el resultado.
+     */
     public static void main(String[] args) {
         launch(args);
     }

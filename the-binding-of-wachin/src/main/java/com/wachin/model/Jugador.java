@@ -6,13 +6,34 @@ import com.wachin.exception.ExperienciaInsuficienteException;
 import com.wachin.exception.NombreInvalidoException;
 import com.wachin.exception.VidaInvalidaException;
 
+/**
+ * Especializa Entidad con recursos propios. Hereda estado común, sobrescribe el ataque (polimorfismo) y encapsula sus campos privados.
+ */
 public class Jugador extends Entidad {
+    /**
+     * Guarda experiencia para que la clase mantenga su estado interno.
+     */
     private int experiencia;
+    /**
+     * Guarda nivel para que la clase mantenga su estado interno.
+     */
     private int nivel;
+    /**
+     * Guarda monedas para que la clase mantenga su estado interno.
+     */
     private int monedas;
+    /**
+     * Guarda energia para que la clase mantenga su estado interno.
+     */
     private int energia;
+    /**
+     * Constante que define energiamaxima para este componente.
+     */
     private int energiaMaxima;
 
+    /**
+     * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
+     */
     public Jugador(String nombre, int vidaMaxima, int dano, int energiaMaxima)
             throws NombreInvalidoException, VidaInvalidaException, DanoInvalidoException {
         super(nombre, vidaMaxima, dano);
@@ -24,6 +45,9 @@ public class Jugador extends Entidad {
         this.energia = energiaMaxima;
     }
 
+    /**
+     * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
+     */
     public Jugador(int id, String nombre, int vida, int vidaMaxima, int dano,
                    int experiencia, int nivel, int monedas, int energia, int energiaMaxima)
             throws NombreInvalidoException, VidaInvalidaException, DanoInvalidoException {
@@ -36,6 +60,9 @@ public class Jugador extends Entidad {
         this.energiaMaxima = energiaMaxima;
     }
 
+    /**
+     * Comprueba que experiencia, nivel, monedas y energía estén dentro de sus rangos válidos.
+     */
     private void validarRecursos(int exp, int nivel, int monedas, int energia, int energiaMaxima) {
         if (exp < 0 || nivel < 1 || monedas < 0 || energiaMaxima < 0
                 || energia < 0 || energia > energiaMaxima) {
@@ -43,14 +70,35 @@ public class Jugador extends Entidad {
         }
     }
 
+    /**
+     * Devuelve experiencia sin exponer directamente el atributo.
+     */
     public int getExperiencia() { return experiencia; }
+    /**
+     * Devuelve nivel sin exponer directamente el atributo.
+     */
     public int getNivel() { return nivel; }
+    /**
+     * Devuelve monedas sin exponer directamente el atributo.
+     */
     public int getMonedas() { return monedas; }
+    /**
+     * Devuelve energía actual sin exponer directamente el atributo.
+     */
     public int getEnergia() { return energia; }
+    /**
+     * Devuelve energía máxima sin exponer directamente el atributo.
+     */
     public int getEnergiaMaxima() { return energiaMaxima; }
 
+    /**
+     * Suma experiencia si la cantidad recibida es positiva.
+     */
     public void ganarExperiencia(int cantidad) { if (cantidad > 0) experiencia += cantidad; }
 
+    /**
+     * Comprueba la experiencia, aumenta el nivel y descuenta el costo requerido.
+     */
     public void subirNivel(int experienciaNecesaria) throws ExperienciaInsuficienteException {
         if (experienciaNecesaria <= 0) throw new IllegalArgumentException("La experiencia necesaria debe ser positiva.");
         if (experiencia < experienciaNecesaria) {
@@ -60,12 +108,18 @@ public class Jugador extends Entidad {
         experiencia -= experienciaNecesaria;
     }
 
+    /**
+     * Valida el costo y descuenta energía disponible.
+     */
     public void gastarEnergia(int cantidad) throws EnergiaInsuficienteException {
         if (cantidad < 0) throw new IllegalArgumentException("No se puede gastar energia negativa.");
         if (cantidad > energia) throw new EnergiaInsuficienteException("No hay suficiente energia para realizar esta accion.");
         energia -= cantidad;
     }
 
+    /**
+     * Recupera energía sin exceder el máximo del jugador.
+     */
     public void recuperarEnergia(int cantidad) {
         if (cantidad <= 0) return;
         energia = Math.min(energiaMaxima, energia + cantidad);

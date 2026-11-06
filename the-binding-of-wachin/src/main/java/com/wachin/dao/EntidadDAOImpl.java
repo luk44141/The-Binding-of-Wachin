@@ -13,8 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** DAO general. Guarda los atributos propios del jugador cuando corresponde. */
+/**
+ * Implementa EntidadDAO y reconstruye el subtipo de entidad indicado por la base.
+ */
 public class EntidadDAOImpl implements EntidadDAO {
     @Override
+    /**
+     * Inserta el estado mediante una consulta parametrizada y cierra los recursos JDBC.
+     */
     public void guardar(Entidad entidad) {
         if (entidad == null) return;
         String sql = "INSERT INTO Entidades (nombre, vida, vida_max, dano, tipo, experiencia, nivel, monedas, energia, energia_maxima) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -41,7 +47,13 @@ public class EntidadDAOImpl implements EntidadDAO {
     }
 
     @Override
+    /**
+     * Consulta por identificador y reconstruye el objeto encontrado.
+     */
     public Entidad buscarPorId(int id) {
+        /**
+         * Guarda sql para que la clase mantenga su estado interno.
+         */
         String sql = "SELECT * FROM Entidades WHERE id = ?";
         try (Connection conexion = ConexionBD.conectar(); PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -55,8 +67,14 @@ public class EntidadDAOImpl implements EntidadDAO {
     }
 
     @Override
+    /**
+     * Consulta los registros disponibles y devuelve los objetos reconstruidos.
+     */
     public List<Entidad> listarTodo() {
         List<Entidad> entidades = new ArrayList<>();
+        /**
+         * Guarda sql para que la clase mantenga su estado interno.
+         */
         String sql = "SELECT * FROM Entidades";
         try (Connection conexion = ConexionBD.conectar(); PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -70,6 +88,9 @@ public class EntidadDAOImpl implements EntidadDAO {
         return entidades;
     }
 
+    /**
+     * Lee el tipo del registro y reconstruye la subclase correspondiente.
+     */
     private Entidad convertirEntidad(ResultSet rs) throws Exception {
         String tipo = rs.getString("tipo");
         if (tipo == null) return null;
@@ -95,8 +116,14 @@ public class EntidadDAOImpl implements EntidadDAO {
     }
 
     @Override
+    /**
+     * Actualiza los datos del registro existente usando una consulta parametrizada.
+     */
     public void actualizar(Entidad entidad) {
         if (entidad == null) return;
+        /**
+         * Guarda sql para que la clase mantenga su estado interno.
+         */
         String sql = "UPDATE Entidades SET nombre = ?, vida = ?, vida_max = ?, dano = ?, tipo = ?, experiencia = ?, nivel = ?, monedas = ?, energia = ?, energia_maxima = ? WHERE id = ?";
         try (Connection conexion = ConexionBD.conectar(); PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, entidad.getNombre());
@@ -122,7 +149,13 @@ public class EntidadDAOImpl implements EntidadDAO {
     }
 
     @Override
+    /**
+     * Borra el registro identificado mediante una consulta parametrizada.
+     */
     public void eliminar(int id) {
+        /**
+         * Guarda sql para que la clase mantenga su estado interno.
+         */
         String sql = "DELETE FROM Entidades WHERE id = ?";
         try (Connection conexion = ConexionBD.conectar(); PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);

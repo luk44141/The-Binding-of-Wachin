@@ -33,19 +33,52 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * Coordina entrada, actualización del juego, combate y comunicación entre modelo y vista.
+ */
 public class PartidaController {
 
+    /**
+     * Constante que define limite izquierdo para este componente.
+     */
     private static final double LIMITE_IZQUIERDO = 75;
+    /**
+     * Constante que define limite derecho para este componente.
+     */
     private static final double LIMITE_DERECHO = 925;
+    /**
+     * Constante que define limite superior para este componente.
+     */
     private static final double LIMITE_SUPERIOR = 75;
+    /**
+     * Constante que define limite inferior para este componente.
+     */
     private static final double LIMITE_INFERIOR = 625;
 
+    /**
+     * Constante que define velocidad jugador para este componente.
+     */
     private static final double VELOCIDAD_JUGADOR = 225;
+    /**
+     * Constante que define velocidad proyectil para este componente.
+     */
     private static final double VELOCIDAD_PROYECTIL = 430;
+    /**
+     * Constante que define tiempo invulnerable para este componente.
+     */
     private static final double TIEMPO_INVULNERABLE = 0.45;
 
+    /**
+     * Guarda vista para que la clase mantenga su estado interno.
+     */
     private final PartidaView vista;
+    /**
+     * Guarda configuracion para que la clase mantenga su estado interno.
+     */
     private final ConfiguracionPartida configuracion;
+    /**
+     * Constante que define alperder para este componente.
+     */
     private final Consumer<ConfiguracionPartida> alPerder;
 
     private final Set<KeyCode> teclasPresionadas = new HashSet<>();
@@ -60,21 +93,57 @@ public class PartidaController {
     private final MapaController mapaController = new MapaController();
     private final Random random = new Random();
 
+    /**
+     * Constante que define jugadorvisual para este componente.
+     */
     private Node jugadorVisual;
 
+    /**
+     * Constante que define jugadorx para este componente.
+     */
     private double jugadorX = 500;
+    /**
+     * Constante que define jugadory para este componente.
+     */
     private double jugadorY = 350;
+    /**
+     * Constante que define jugadorxanterior para este componente.
+     */
     private double jugadorXAnterior = 500;
+    /**
+     * Constante que define jugadoryanterior para este componente.
+     */
     private double jugadorYAnterior = 350;
+    /**
+     * Constante que define tiempoinvulnerable para este componente.
+     */
     private double tiempoInvulnerable;
 
+    /**
+     * Constante que define ultimotiempo para este componente.
+     */
     private long ultimoTiempo;
+    /**
+     * Constante que define gameloop para este componente.
+     */
     private AnimationTimer gameLoop;
 
+    /**
+     * Constante que define puertasabiertas para este componente.
+     */
     private boolean puertasAbiertas;
+    /**
+     * Constante que define juegoterminado para este componente.
+     */
     private boolean juegoTerminado;
+    /**
+     * Guarda pausado para que la clase mantenga su estado interno.
+     */
     private boolean pausado;
 
+    /**
+     * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
+     */
     public PartidaController(
         PartidaView vista,
         ConfiguracionPartida configuracion,
@@ -87,6 +156,9 @@ public class PartidaController {
     this.alPerder = alPerder;
     }
 
+    /**
+     * Prepara el estado inicial y pone en marcha este componente.
+     */
     public void iniciar() {
         crearJugador();
         prepararSala(mapaController.iniciar());
@@ -94,13 +166,22 @@ public class PartidaController {
         iniciarGameLoop();
     }
 
+    /**
+     * Detiene el ciclo de animación si se encuentra activo.
+     */
     public void detener() {
         if (gameLoop != null) {
             gameLoop.stop();
         }
     }
 
+    /**
+     * Ejecuta la operación teclaPresionada dentro de la responsabilidad de esta clase.
+     */
     public boolean teclaPresionada(KeyCode tecla) {
+    /**
+     * Ejecuta la operación if dentro de la responsabilidad de esta clase.
+     */
     if (tecla == KeyCode.ESCAPE || pausado || !partidaActiva()) {
         return false;
     }
@@ -108,10 +189,16 @@ public class PartidaController {
     return teclasPresionadas.add(tecla);
     }
 
+    /**
+     * Ejecuta la operación teclaLiberada dentro de la responsabilidad de esta clase.
+     */
     public void teclaLiberada(KeyCode tecla) {
         teclasPresionadas.remove(tecla);
     }
 
+    /**
+     * Ejecuta la operación manejarTecla dentro de la responsabilidad de esta clase.
+     */
     public void manejarTecla(KeyCode tecla) {
         if (tecla == KeyCode.ESCAPE) {
             if (!juegoTerminado) {
@@ -142,6 +229,9 @@ public class PartidaController {
         }
     }
 
+    /**
+     * Ejecuta la operación alternarPausa dentro de la responsabilidad de esta clase.
+     */
     private void alternarPausa() {
         if (pausado) {
             reanudar();
@@ -153,6 +243,9 @@ public class PartidaController {
         vista.mostrarPausa(this::reanudar);
     }
 
+    /**
+     * Ejecuta la operación reanudar dentro de la responsabilidad de esta clase.
+     */
     private void reanudar() {
         pausado = false;
         teclasPresionadas.clear();
@@ -160,6 +253,9 @@ public class PartidaController {
         ultimoTiempo = 0;
     }
 
+    /**
+     * Crea el modelo del jugador, inicia JuegoService y agrega su representación visual.
+     */
     private void crearJugador() {
         try {
             String nombre = configuracion.getPersonaje().getNombre();
@@ -193,6 +289,9 @@ public class PartidaController {
         }
     }
 
+    /**
+     * Genera los enemigos del nodo, configura la vista de sala y refresca el HUD.
+     */
     private void prepararSala(MapaController.SalaNodo nodo) {
         limpiarSalaAnterior();
         if (nodo == null) return;
@@ -237,6 +336,9 @@ public class PartidaController {
         actualizarHUD();
     }
 
+    /**
+     * Genera el jefe del mapa y agrega su modelo y su nodo visual a la partida.
+     */
     private void crearJefe() {
         Jefe jefe = salaService.generarJefe(
                 mapaController.getActual().getId(),
@@ -255,6 +357,9 @@ public class PartidaController {
         vista.agregarEnemigo(visual);
     }
 
+    /**
+     * Retira enemigos y disparos de la escena y limpia sus colecciones.
+     */
     private void limpiarSalaAnterior() {
         for (EnemigoVisual enemigo : enemigosVisuales) {
             vista.quitarEnemigo(enemigo);
@@ -272,6 +377,9 @@ public class PartidaController {
         teclasPresionadas.clear();
     }
 
+    /**
+     * Ubica al jugador junto a la puerta de entrada y sincroniza sus posiciones para colisiones.
+     */
     private void colocarJugadorEnEntrada(
             PuertaVisual.Direccion salidaAnterior) {
 
@@ -301,9 +409,21 @@ public class PartidaController {
         jugadorYAnterior = jugadorY;
     }
 
+    /**
+     * Elige una posición dentro de la sala, intentando mantener distancia del jugador.
+     */
     private double[] generarPosicionEnemigo() {
+        /**
+         * Guarda x para que la clase mantenga su estado interno.
+         */
         double x;
+        /**
+         * Guarda y para que la clase mantenga su estado interno.
+         */
         double y;
+        /**
+         * Guarda intentos para que la clase mantenga su estado interno.
+         */
         int intentos = 0;
 
         do {
@@ -318,6 +438,9 @@ public class PartidaController {
         return new double[]{x, y};
     }
 
+    /**
+     * Crea un proyectil con velocidad y orientación según la dirección y lo agrega a la vista.
+     */
     private void disparar(double direccionX, double direccionY) {
         Jugador jugador = juegoService.getJugador();
 
@@ -339,6 +462,9 @@ public class PartidaController {
         vista.agregarProyectil(proyectil);
     }
 
+    /**
+     * Crea el ciclo JavaFX que actualiza tiempo, movimiento, colisiones y estado.
+     */
     private void iniciarGameLoop() {
         gameLoop = new AnimationTimer() {
             @Override
@@ -383,10 +509,16 @@ public class PartidaController {
         gameLoop.start();
     }
 
+    /**
+     * Ejecuta la operación partidaActiva dentro de la responsabilidad de esta clase.
+     */
     private boolean partidaActiva() {
         return !juegoTerminado && juegoService.jugadorEstaVivo();
     }
 
+    /**
+     * Lee las teclas mantenidas, normaliza el movimiento, limita al jugador y mueve su sprite.
+     */
     private void actualizarJugador(double deltaTiempo) {
         if (!partidaActiva()) {
             return;
@@ -394,7 +526,13 @@ public class PartidaController {
 
         jugadorXAnterior = jugadorX;
         jugadorYAnterior = jugadorY;
+        /**
+         * Constante que define direccionx para este componente.
+         */
         double direccionX = 0;
+        /**
+         * Constante que define direcciony para este componente.
+         */
         double direccionY = 0;
 
         if (teclasPresionadas.contains(KeyCode.W)) direccionY--;
@@ -419,6 +557,9 @@ public class PartidaController {
         AssetVisual.moverAlCentro(jugadorVisual, jugadorX, jugadorY, 54, 54);
     }
 
+    /**
+     * Mantiene las coordenadas del jugador dentro del área jugable.
+     */
     private void limitarJugador() {
         jugadorX = Math.max(
                 LIMITE_IZQUIERDO,
@@ -431,11 +572,17 @@ public class PartidaController {
         );
     }
 
+    /**
+     * Comprueba si el jugador alcanza una salida abierta y solicita el siguiente nodo al mapa.
+     */
     private boolean detectarPuerta() {
         if (!puertasAbiertas || !partidaActiva()) {
             return false;
         }
 
+        /**
+         * Guarda direccion para que la clase mantenga su estado interno.
+         */
         PuertaVisual.Direccion direccion = null;
 
         boolean centroX = Math.abs(jugadorX - 500) <= 55;
@@ -462,6 +609,9 @@ public class PartidaController {
         return true;
     }
 
+    /**
+     * Actualiza los enemigos y aplica daño al detectar contacto durante sus recorridos.
+     */
     private void actualizarEnemigos(double deltaTiempo) {
         if (!partidaActiva()) {
             return;
@@ -481,6 +631,9 @@ public class PartidaController {
         }
     }
 
+    /**
+     * Escala el daño por mapa y profundidad, lo aplica al modelo y activa el aviso visual.
+     */
     private void recibirDanoJugador(int dano) {
         Jugador jugador = juegoService.getJugador();
 
@@ -497,6 +650,9 @@ public class PartidaController {
         }
     }
 
+    /**
+     * Avanza los disparos y elimina los que salen del escenario o impactan.
+     */
     private void actualizarProyectiles(double deltaTiempo) {
         Iterator<Proyectil> iterador = proyectiles.iterator();
 
@@ -514,6 +670,9 @@ public class PartidaController {
         }
     }
 
+    /**
+     * Busca una intersección entre trayectorias y resuelve el impacto encontrado.
+     */
     private void verificarImpacto(
             Proyectil proyectil,
             Iterator<Proyectil> iterador) {
@@ -531,6 +690,9 @@ public class PartidaController {
         }
     }
 
+    /**
+     * Delega el ataque a CombateService y retira enemigos derrotados otorgando experiencia.
+     */
     private void atacarEnemigo(EnemigoVisual enemigoVisual) {
         Enemigo enemigo = enemigoVisual.getEnemigo();
 
@@ -548,6 +710,9 @@ public class PartidaController {
         }
     }
 
+    /**
+     * Comprueba derrota y limpieza de sala; actualiza mensajes y habilita las puertas.
+     */
     private void verificarEstado() {
         if (!juegoService.jugadorEstaVivo()) {
             juegoTerminado = true;
@@ -582,6 +747,9 @@ public class PartidaController {
         }
     }
 
+    /**
+     * Actualiza textos de vida, experiencia, nivel, mapa, sala y dificultad.
+     */
     private void actualizarHUD() {
         if (mapaController.getActual() == null) {
             return;

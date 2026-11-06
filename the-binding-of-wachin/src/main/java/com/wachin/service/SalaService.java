@@ -11,17 +11,35 @@ import java.util.List;
 import java.util.Random;
 
 /** Genera enemigos usando una unica identidad visual: poli.png. */
+/**
+ * Genera salas, enemigos y jefes con atributos escalados por dificultad.
+ */
 public class SalaService {
     private final Random random = new Random();
 
+    /**
+     * Ejecuta la operación esSalaJefe dentro de la responsabilidad de esta clase.
+     */
     public boolean esSalaJefe(int numeroSala) { return numeroSala > 0 && numeroSala % 5 == 0; }
+    /**
+     * Ejecuta la operación obtenerNumeroMapa dentro de la responsabilidad de esta clase.
+     */
     public int obtenerNumeroMapa(int numeroSala) { return ((numeroSala - 1) / 5) + 1; }
+    /**
+     * Calcula el nivel y genera enemigos escalados, excepto en una sala de jefe.
+     */
     public Sala generarSala(int numeroSala) { return generarSala(numeroSala, numeroSala, esSalaJefe(numeroSala), obtenerNumeroMapa(numeroSala)); }
 
+    /**
+     * Calcula el nivel y genera enemigos escalados, excepto en una sala de jefe.
+     */
     public Sala generarSala(int identificador, int profundidad, boolean esJefe) {
         return generarSala(identificador, profundidad, esJefe, 1);
     }
 
+    /**
+     * Calcula el nivel y genera enemigos escalados, excepto en una sala de jefe.
+     */
     public Sala generarSala(int identificador, int profundidad, boolean esJefe, int mapa) {
         if (identificador < 1 || profundidad < 1 || mapa < 1) {
             throw new IllegalArgumentException("Identificador, profundidad y mapa deben ser positivos.");
@@ -36,8 +54,14 @@ public class SalaService {
         return new Sala(identificador, Math.max(1, nivel), enemigos);
     }
 
+    /**
+     * Construye un jefe cuyos atributos escalan con el mapa.
+     */
     public Jefe generarJefe(int numeroSala) { return generarJefe(numeroSala, obtenerNumeroMapa(numeroSala)); }
 
+    /**
+     * Construye un jefe cuyos atributos escalan con el mapa.
+     */
     public Jefe generarJefe(int identificador, int mapa) {
         int nivel = Math.max(1, mapa);
         int vida = 1500 + (nivel - 1) * 250;
@@ -51,9 +75,18 @@ public class SalaService {
         }
     }
 
+    /**
+     * Crea un enemigo Poli con vida, daño y velocidad determinados por el nivel.
+     */
     private Enemigo crearEnemigo(int nivel) {
         // Antes se elegian seis tipos con sprites inexistentes. Ahora todos son Poli.
+        /**
+         * Guarda vida para que la clase mantenga su estado interno.
+         */
         int vida = 38 + nivel * 17;
+        /**
+         * Guarda dano para que la clase mantenga su estado interno.
+         */
         int dano = 7 + nivel * 3;
         double velocidad = Math.min(85 + nivel * 7.0, 250);
         try {

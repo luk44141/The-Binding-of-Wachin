@@ -9,11 +9,20 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementa JugadorDAO mediante consultas JDBC para guardar y recuperar jugadores.
+ */
 public class JugadorDAOImpl implements JugadorDAO {
 
     @Override
+    /**
+     * Inserta el estado mediante una consulta parametrizada y cierra los recursos JDBC.
+     */
     public void guardar(Jugador jugador) {
 
+        /**
+         * Guarda sql para que la clase mantenga su estado interno.
+         */
         String sql = "INSERT INTO Entidades " +
                 "(nombre, vida, vida_max, dano, tipo, experiencia, nivel, monedas, energia, energia_maxima) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -40,8 +49,14 @@ public class JugadorDAOImpl implements JugadorDAO {
     }
 
     @Override
+    /**
+     * Consulta por identificador y reconstruye el objeto encontrado.
+     */
     public Jugador buscarPorId(int id) {
 
+        /**
+         * Guarda sql para que la clase mantenga su estado interno.
+         */
         String sql = "SELECT * FROM Entidades WHERE id = ? AND tipo = 'JUGADOR'";
 
         try (Connection conexion = ConexionBD.conectar();
@@ -75,10 +90,16 @@ public class JugadorDAOImpl implements JugadorDAO {
     }
 
     @Override
+    /**
+     * Consulta los registros disponibles y devuelve los objetos reconstruidos.
+     */
     public List<Jugador> listarTodo() {
 
         List<Jugador> jugadores = new ArrayList<>();
 
+        /**
+         * Guarda sql para que la clase mantenga su estado interno.
+         */
         String sql = "SELECT * FROM Entidades WHERE tipo = 'JUGADOR'";
 
         try (Connection conexion = ConexionBD.conectar();
@@ -111,8 +132,14 @@ public class JugadorDAOImpl implements JugadorDAO {
     }
 
     @Override
+    /**
+     * Actualiza los datos del registro existente usando una consulta parametrizada.
+     */
     public void actualizar(Jugador jugador) {
 
+        /**
+         * Guarda sql para que la clase mantenga su estado interno.
+         */
         String sql = "UPDATE Entidades SET " +
                 "nombre = ?, vida = ?, vida_max = ?, dano = ?, " +
                 "experiencia = ?, nivel = ?, monedas = ?, " +
@@ -141,8 +168,14 @@ public class JugadorDAOImpl implements JugadorDAO {
     }
 
     @Override
+    /**
+     * Borra el registro identificado mediante una consulta parametrizada.
+     */
     public void eliminar(int id) {
 
+        /**
+         * Guarda sql para que la clase mantenga su estado interno.
+         */
         String sql = "DELETE FROM Entidades WHERE id = ? AND tipo = 'JUGADOR'";
 
         try (Connection conexion = ConexionBD.conectar();
