@@ -75,6 +75,11 @@ public final class ConfiguracionPartida {
         this.tipoProyectil = tipoProyectil == null ? TipoProyectil.GOTA : tipoProyectil;
     }
 
+    /** Configuración inicial sin elección de proyectil; Gota permanece como equipo predeterminado. */
+    public ConfiguracionPartida(Personaje personaje) {
+        this(personaje, TipoProyectil.GOTA);
+    }
+
     /**
      * Devuelve personaje seleccionado sin exponer directamente el atributo.
      */

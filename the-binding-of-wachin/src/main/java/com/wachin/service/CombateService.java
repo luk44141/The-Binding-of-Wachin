@@ -8,6 +8,18 @@ import com.wachin.model.Entidad;
  */
 public class CombateService {
 
+    /** Aplica el escalado ya usado por la partida según el mapa y la profundidad. */
+    public int calcularDanoRecibido(int danoBase, int mapa, int profundidad) {
+        if (danoBase < 0 || mapa < 1 || profundidad < 1) {
+            throw new IllegalArgumentException("Daño, mapa o profundidad inválidos.");
+        }
+        if (danoBase == 0) return 0;
+        double multiplicador = 1.50
+                + Math.min(0.90, (mapa - 1) * 0.12)
+                + Math.min(0.40, (profundidad - 1) * 0.08);
+        return Math.max(Math.addExact(danoBase, 1), (int) Math.ceil(danoBase * multiplicador));
+    }
+
     /**
      * Aplica al objetivo el daño definido por esta entidad.
      */
@@ -32,6 +44,12 @@ public class CombateService {
                     e
             );
         }
+    }
+
+    public void aplicarDano(int dano, Entidad objetivo) throws DanoInvalidoException {
+        if (objetivo == null) return;
+        if (dano < 0) throw new DanoInvalidoException("El daño no puede ser negativo.");
+        objetivo.recibirDano(dano);
     }
 
     /**

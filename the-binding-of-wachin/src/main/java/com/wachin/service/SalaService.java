@@ -20,11 +20,11 @@ public class SalaService {
     /**
      * Ejecuta la operación esSalaJefe dentro de la responsabilidad de esta clase.
      */
-    public boolean esSalaJefe(int numeroSala) { return numeroSala > 0 && numeroSala % 5 == 0; }
+    public boolean esSalaJefe(int numeroSala) { return ProgresionService.jefeDeSala(numeroSala) != null; }
     /**
      * Ejecuta la operación obtenerNumeroMapa dentro de la responsabilidad de esta clase.
      */
-    public int obtenerNumeroMapa(int numeroSala) { return ((numeroSala - 1) / 5) + 1; }
+    public int obtenerNumeroMapa(int numeroSala) { return ProgresionService.ubicacionDeSala(numeroSala).mapa(); }
     /**
      * Calcula el nivel y genera enemigos escalados, excepto en una sala de jefe.
      */
@@ -44,12 +44,12 @@ public class SalaService {
         if (identificador < 1 || profundidad < 1 || mapa < 1) {
             throw new IllegalArgumentException("Identificador, profundidad y mapa deben ser positivos.");
         }
-        int nivel = (mapa - 1) * 4 + profundidad;
+        int nivel = (mapa - 1) * 5 + profundidad;
         List<Enemigo> enemigos = new ArrayList<>();
         if (!esJefe) {
             // Aumenta la cantidad y los atributos en cada mapa y profundidad.
             int cantidad = Math.min(4 + random.nextInt(3) + nivel / 2, 14);
-            for (int i = 0; i < cantidad; i++) enemigos.add(crearEnemigo(nivel));
+            for (int i = 0; i < cantidad; i++) enemigos.add(crearEnemigo(nivel, i % 4 == 3));
         }
         return new Sala(identificador, Math.max(1, nivel), enemigos);
     }
@@ -75,11 +75,33 @@ public class SalaService {
         }
     }
 
+    /** Construye un jefe definido para su hito global, con atributos propios. */
+    public Jefe generarJefe(com.wachin.model.Jefe.Tipo tipo) {
+        if (tipo == null) throw new IllegalArgumentException("El tipo de jefe es obligatorio.");
+        int vida;
+        int dano;
+        double velocidad;
+        String nombre;
+        String especial;
+        int extra;
+        switch (tipo) {
+            case SALA_10 -> { vida = 1500; dano = 18; velocidad = 105; nombre = "Guardián"; especial = "EMBESTIDA"; extra = 19; }
+            case SALA_15 -> { vida = 2600; dano = 24; velocidad = 82; nombre = "Artillero"; especial = "RAFAGA_RADIAL_EMBESTIDA"; extra = 24; }
+            case SALA_20 -> { vida = 4600; dano = 32; velocidad = 135; nombre = "Palinni, el Incesante"; especial = "DOS_FASES_ZONAS_DE_IMPACTO"; extra = 32; }
+            default -> throw new IllegalArgumentException("Tipo de jefe desconocido.");
+        }
+        try {
+            return new Jefe(nombre, vida, dano, "JEFE", velocidad,
+                    tipo.ordinal() + 1, especial, extra, tipo);
+        } catch (NombreInvalidoException | VidaInvalidaException | DanoInvalidoException e) {
+            throw new IllegalStateException("No se pudo generar el jefe.", e);
+        }
+    }
+
     /**
      * Crea un enemigo Poli con vida, daño y velocidad determinados por el nivel.
      */
-    private Enemigo crearEnemigo(int nivel) {
-        // Antes se elegian seis tipos con sprites inexistentes. Ahora todos son Poli.
+    private Enemigo crearEnemigo(int nivel, boolean aDistancia) {
         /**
          * Guarda vida para que la clase mantenga su estado interno.
          */
@@ -90,7 +112,8 @@ public class SalaService {
         int dano = 7 + nivel * 3;
         double velocidad = Math.min(85 + nivel * 7.0, 250);
         try {
-            return new Enemigo("Poli", vida, dano, "POLI", velocidad);
+            return new Enemigo(aDistancia ? "Tirador" : "Poli", vida, dano,
+                    aDistancia ? "TIRADOR" : "POLI", velocidad);
         } catch (NombreInvalidoException | VidaInvalidaException | DanoInvalidoException e) {
             throw new IllegalStateException("No se pudo generar un enemigo Poli.", e);
         }

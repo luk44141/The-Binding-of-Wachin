@@ -53,23 +53,14 @@ public final class MenuInicial {
         personajes.setValue(inicial == null ? ConfiguracionPartida.Personaje.WACHIN : inicial.getPersonaje());
         personajes.setPrefWidth(250);
 
-        Text etiquetaProyectil = etiqueta("TIPO DE PROYECTIL");
-        ComboBox<ConfiguracionPartida.TipoProyectil> proyectiles = new ComboBox<>();
-        proyectiles.getItems().setAll(ConfiguracionPartida.TipoProyectil.values());
-        proyectiles.setValue(inicial == null ? ConfiguracionPartida.TipoProyectil.GOTA : inicial.getTipoProyectil());
-        proyectiles.setPrefWidth(250);
-
         Button jugar = new Button(botonTexto);
         jugar.setFont(Font.font("Arial", 20));
         jugar.setPrefWidth(250);
         jugar.setPrefHeight(52);
         jugar.setStyle("-fx-background-color: #8b0000; -fx-text-fill: white; -fx-cursor: hand;");
-        jugar.setOnAction(event -> alJugar.accept(new ConfiguracionPartida(
-                personajes.getValue(), proyectiles.getValue()
-        )));
+        jugar.setOnAction(event -> alJugar.accept(new ConfiguracionPartida(personajes.getValue())));
 
-        VBox contenido = new VBox(15, titulo, etiquetaPersonaje, personajes,
-                etiquetaProyectil, proyectiles, jugar);
+        VBox contenido = new VBox(15, titulo, etiquetaPersonaje, personajes, jugar);
         contenido.setAlignment(Pos.CENTER);
         raiz.getChildren().add(contenido);
         return raiz;

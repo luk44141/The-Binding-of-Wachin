@@ -14,13 +14,26 @@ public class JugadorService {
     /**
      * Suma experiencia si la cantidad recibida es positiva.
      */
-    public void ganarExperiencia(Jugador jugador, int experiencia) {
-
-        if (jugador == null) {
-            return;
-        }
-
+    public int ganarExperiencia(Jugador jugador, int experiencia) {
+        if (jugador == null || experiencia <= 0) return 0;
         jugador.ganarExperiencia(experiencia);
+        int nivelesGanados = 0;
+        while (jugador.getExperiencia() >= experienciaNecesaria(jugador.getNivel())) {
+            int necesaria = experienciaNecesaria(jugador.getNivel());
+            try { jugador.subirNivel(necesaria); }
+            catch (ExperienciaInsuficienteException e) {
+                throw new IllegalStateException("La experiencia cambió durante el ascenso de nivel.", e);
+            }
+            jugador.aumentarVidaMaxima(10);
+            nivelesGanados++;
+        }
+        return nivelesGanados;
+    }
+
+    /** Nivel 1 requiere 100 XP; cada nivel siguiente agrega 10 XP al requisito. */
+    public int experienciaNecesaria(int nivelActual) {
+        if (nivelActual < 1) throw new IllegalArgumentException("El nivel debe ser positivo.");
+        return Math.addExact(100, Math.multiplyExact(nivelActual - 1, 10));
     }
 
     /**

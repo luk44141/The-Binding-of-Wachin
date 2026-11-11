@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.wachin.service.ProgresionService;
 
 /** Mantiene el grafo procedural de salas y su progreso. */
 /**
@@ -30,7 +31,7 @@ public final class MapaController {
         /**
          * Guarda jefe para que la clase mantenga su estado interno.
          */
-        private final boolean jefe;
+        private int numeroGlobal;
         /**
          * Guarda mapa para que la clase mantenga su estado interno.
          */
@@ -40,22 +41,24 @@ public final class MapaController {
          */
         private final Map<PuertaVisual.Direccion, SalaNodo> salidas =
                 new EnumMap<>(PuertaVisual.Direccion.class);
+        private PuertaVisual.Direccion entrada;
 
-        private SalaNodo(int id, int profundidad, boolean jefe, int mapa) {
+        private SalaNodo(int id, int profundidad, int mapa) {
             this.id = id;
             this.profundidad = profundidad;
-            this.jefe = jefe;
             this.mapa = mapa;
         }
         public int getId() { return id; }
         public int getProfundidad() { return profundidad; }
-        public boolean esJefe() { return jefe; }
+        public boolean esJefe() { return ProgresionService.jefeDeSala(numeroGlobal) != null; }
+        public int getNumeroGlobal() { return numeroGlobal; }
         public int getMapa() { return mapa; }
+        public PuertaVisual.Direccion getDireccionEntrada() { return entrada; }
         public Set<PuertaVisual.Direccion> getDireccionesSalida() { return Collections.unmodifiableSet(salidas.keySet()); }
     }
 
     private final Set<Integer> visitadas = new HashSet<>();
-    private final Map<Integer, SalaNodo> jefes = new HashMap<>();
+    private final ProgresionService progresion;
     /**
      * Constante que define siguienteid para este componente.
      */
@@ -63,19 +66,58 @@ public final class MapaController {
     /**
      * Constante que define numerosala para este componente.
      */
-    private int numeroSala;
     /**
      * Guarda actual para que la clase mantenga su estado interno.
      */
     private SalaNodo actual;
 
+    public MapaController() { this(new ProgresionService()); }
+
+    public MapaController(ProgresionService progresion) {
+        if (progresion == null) throw new IllegalArgumentException("El servicio de progresión es obligatorio.");
+        this.progresion = progresion;
+    }
+
     /**
      * Prepara el estado inicial y pone en marcha este componente.
      */
     public SalaNodo iniciar() {
-        SalaNodo inicio = crearSala(1, false, 1);
+        SalaNodo inicio = crearSala(1, 1, 1);
         entrar(inicio, null);
         return actual;
+    }
+
+    /** Reconstruye el nodo actual y continúa el grafo desde el estado guardado. */
+    public SalaNodo restaurarSala(int numeroGlobal, int mapa, int profundidad,
+            Set<PuertaVisual.Direccion> direcciones) {
+        return restaurarSala(numeroGlobal, mapa, profundidad, direcciones, null);
+    }
+
+    public SalaNodo restaurarSala(int numeroGlobal, int mapa, int profundidad,
+            Set<PuertaVisual.Direccion> direcciones, PuertaVisual.Direccion entrada) {
+        if (numeroGlobal < 1 || mapa < 1 || profundidad < 1) {
+            throw new IllegalArgumentException("Progreso de mapa guardado inválido.");
+        }
+        ProgresionService.UbicacionSala ubicacion = ProgresionService.ubicacionDeSala(numeroGlobal);
+        if (mapa != ubicacion.mapa() || profundidad != ubicacion.profundidad()) {
+            throw new IllegalArgumentException("El mapa y la profundidad no coinciden con la sala global guardada.");
+        }
+        progresion.restaurarNumeroSalaGlobal(numeroGlobal);
+        siguienteId = numeroGlobal + 1;
+        SalaNodo sala = new SalaNodo(numeroGlobal, profundidad, mapa);
+        sala.numeroGlobal = numeroGlobal;
+        sala.entrada = entrada;
+        actual = sala;
+        visitadas.clear();
+        visitadas.add(sala.id);
+        if (direcciones != null && !direcciones.isEmpty()) {
+            for (PuertaVisual.Direccion direccion : direcciones) {
+                sala.salidas.put(direccion, crearSalaSiguiente());
+            }
+        } else {
+            prepararSalidas(sala, null);
+        }
+        return sala;
     }
 
     /**
@@ -92,24 +134,21 @@ public final class MapaController {
      */
     private SalaNodo entrar(SalaNodo sala, PuertaVisual.Direccion puertaEntrada) {
         actual = sala;
-        numeroSala++;
+        sala.numeroGlobal = progresion.registrarEntradaSala();
+        sala.entrada = puertaEntrada == null ? null : opuesta(puertaEntrada);
         visitadas.add(sala.id);
-        prepararSalidas(sala, puertaEntrada == null ? null : opuesta(puertaEntrada));
+        prepararSalidas(sala, sala.entrada);
         return sala;
     }
 
     /**
      * Asigna un identificador y crea un nodo con mapa, profundidad y tipo.
      */
-    private SalaNodo crearSala(int profundidad, boolean jefe, int mapa) {
-        return new SalaNodo(siguienteId++, profundidad, jefe, mapa);
-    }
-
-    /**
-     * Reutiliza el nodo de jefe del mapa o lo crea si todavía no existe.
-     */
-    private SalaNodo obtenerJefe(int mapa) {
-        return jefes.computeIfAbsent(mapa, m -> crearSala(5, true, m));
+    private SalaNodo crearSala(int numeroGlobal, int profundidad, int mapa) {
+        siguienteId = Math.max(siguienteId, numeroGlobal + 1);
+        SalaNodo sala = new SalaNodo(numeroGlobal, profundidad, mapa);
+        sala.numeroGlobal = numeroGlobal;
+        return sala;
     }
 
     /**
@@ -117,20 +156,22 @@ public final class MapaController {
      */
     private void prepararSalidas(SalaNodo sala, PuertaVisual.Direccion entrada) {
         if (!sala.salidas.isEmpty()) return;
-        if (sala.jefe) {
-            PuertaVisual.Direccion direccion = elegirDirecciones(entrada, 1).get(0);
-            sala.salidas.put(direccion, crearSala(1, false, sala.mapa + 1));
-            return;
-        }
         List<PuertaVisual.Direccion> direcciones = elegirDirecciones(entrada,
-                sala.profundidad >= 4 ? 1 : 2);
-        if (sala.profundidad >= 4) {
-            sala.salidas.put(direcciones.get(0), obtenerJefe(sala.mapa));
+                progresion.esFinDeMapa(sala.numeroGlobal) ? 1 : 2);
+        if (progresion.esFinDeMapa(sala.numeroGlobal)) {
+            sala.salidas.put(direcciones.get(0), crearSalaSiguiente());
         } else {
             for (PuertaVisual.Direccion direccion : direcciones) {
-                sala.salidas.put(direccion, crearSala(sala.profundidad + 1, false, sala.mapa));
+                sala.salidas.put(direccion, crearSalaSiguiente());
             }
         }
+    }
+
+    private SalaNodo crearSalaSiguiente() {
+        ProgresionService.UbicacionSala ubicacion = ProgresionService.ubicacionDeSala(
+                progresion.getNumeroSalaGlobal() + 1);
+        int siguienteGlobal = progresion.getNumeroSalaGlobal() + 1;
+        return crearSala(siguienteGlobal, ubicacion.profundidad(), ubicacion.mapa());
     }
 
     /**
@@ -163,7 +204,7 @@ public final class MapaController {
     /**
      * Devuelve número de sala sin exponer directamente el atributo.
      */
-    public int getNumeroSala() { return numeroSala; }
+    public int getNumeroSala() { return progresion.getNumeroSalaGlobal(); }
     /**
      * Devuelve destino conectado sin exponer directamente el atributo.
      */

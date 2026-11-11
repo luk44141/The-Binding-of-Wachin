@@ -7,16 +7,15 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Line;
+import java.util.ArrayList;
+import java.util.List;
 
-/** Vista y comportamiento de persecucion/embestida de una entidad enemiga. */
-/**
- * Representa un enemigo en pantalla y actualiza su movimiento, IA de jefe y barra de vida.
- */
+/** Representación visual de un enemigo y sus indicadores de combate. */
 public class EnemigoVisual {
     /**
      * Define una opción cerrada disponible para la configuración del juego.
      */
-    private enum FaseJefe { PERSEGUIR, PREPARAR, EMBESTIR, RECUPERAR }
 
     /**
      * Guarda enemigo para que la clase mantenga su estado interno.
@@ -39,6 +38,8 @@ public class EnemigoVisual {
      * Constante que define avisoembestida para este componente.
      */
     private final Circle avisoEmbestida;
+    private final Line avisoDireccion = new Line();
+    private final List<Circle> avisosZonas = new ArrayList<>();
     /**
      * Constante que define esjefe para este componente.
      */
@@ -46,7 +47,6 @@ public class EnemigoVisual {
     /**
      * Guarda velocidad para que la clase mantenga su estado interno.
      */
-    private final double velocidad;
     /**
      * Constante que define radiocolision para este componente.
      */
@@ -57,37 +57,8 @@ public class EnemigoVisual {
     private final double tamanoVisual;
 
     /**
-     * Guarda x para que la clase mantenga su estado interno.
-     */
-    private double x;
-    /**
-     * Guarda y para que la clase mantenga su estado interno.
-     */
-    private double y;
-    /**
-     * Constante que define xanterior para este componente.
-     */
-    private double xAnterior;
-    /**
-     * Constante que define yanterior para este componente.
-     */
-    private double yAnterior;
-    /**
      * Constante que define tiempofase para este componente.
      */
-    private double tiempoFase;
-    /**
-     * Constante que define direcciondashx para este componente.
-     */
-    private double direccionDashX;
-    /**
-     * Constante que define direcciondashy para este componente.
-     */
-    private double direccionDashY;
-    /**
-     * Constante que define fasejefe para este componente.
-     */
-    private FaseJefe faseJefe = FaseJefe.PERSEGUIR;
 
     /**
      * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
@@ -95,29 +66,35 @@ public class EnemigoVisual {
     public EnemigoVisual(Enemigo enemigo, double x, double y) {
         if (enemigo == null) throw new IllegalArgumentException("El enemigo no puede ser null.");
         this.enemigo = enemigo;
-        this.x = x;
-        this.y = y;
-        this.xAnterior = x;
-        this.yAnterior = y;
+        enemigo.restaurarPosicion(x, y);
         this.esJefe = enemigo instanceof Jefe;
-        this.velocidad = enemigo.getVelocidad();
-        this.radioColision = esJefe ? 34 : 22;
-        this.tamanoVisual = esJefe ? 112 : 68;
-        // El jefe espera antes de su primera embestida para que el jugador pueda posicionarse.
-        this.tiempoFase = esJefe ? 2.4 : 0;
+        this.radioColision = esJefe ? (enemigo instanceof Jefe j && j.getTipoJefe() == Jefe.Tipo.SALA_20 ? 42 : 34) : 22;
+        this.tamanoVisual = esJefe ? (enemigo instanceof Jefe j && j.getTipoJefe() == Jefe.Tipo.SALA_20 ? 138 : 112) : 68;
 
         // Poli es el unico sprite normal; el jefe usa el mismo asset a mayor escala.
         /**
          * Constante que define rutaasset para este componente.
          */
-        String rutaAsset = esJefe
-                ? "assets/images/bosses/palinni.png"
-                : "assets/images/enemies/poli.png";
-        this.visual = AssetVisual.crear(rutaAsset, x, y,
-                tamanoVisual, tamanoVisual,
-                esJefe ? Color.PURPLE : Color.CRIMSON,
-                esJefe ? Color.GOLD : Color.BLACK,
-                esJefe ? 5 : 2);
+        String rutaAsset = enemigo instanceof Jefe j
+                ? switch (j.getTipoJefe()) {
+                    case SALA_10 -> "assets/images/bosses/palinni.png";
+                    case SALA_15 -> "assets/images/bosses/boss_2/boss.png";
+                    case SALA_20 -> "assets/images/bosses/boss_3/boss.png";
+                }
+                : "TIRADOR".equals(enemigo.getTipoEnemigo())
+                        ? "assets/images/enemies/ranged/tirador.png" : "assets/images/enemies/poli.png";
+        Color color = enemigo instanceof Jefe j
+                ? (j.getTipoJefe() == Jefe.Tipo.SALA_20 ? Color.DARKRED
+                    : j.getTipoJefe() == Jefe.Tipo.SALA_15 ? Color.DARKORANGE : Color.PURPLE)
+                : "TIRADOR".equals(enemigo.getTipoEnemigo()) ? Color.DODGERBLUE : Color.CRIMSON;
+        this.visual = enemigo instanceof Jefe j && j.getTipoJefe() != Jefe.Tipo.SALA_10
+                ? AssetVisual.crearBloque(rutaAsset, x, y, tamanoVisual, tamanoVisual,
+                        color, Color.GOLD, 4)
+                : "TIRADOR".equals(enemigo.getTipoEnemigo())
+                        ? AssetVisual.crearBloque(rutaAsset, x, y, tamanoVisual, tamanoVisual,
+                                color, Color.DARKBLUE, 2)
+                : AssetVisual.crear(rutaAsset, x, y, tamanoVisual, tamanoVisual,
+                        color, esJefe ? Color.GOLD : Color.BLACK, esJefe ? 5 : 2);
         grupo.getChildren().add(visual);
 
         /**
@@ -145,20 +122,33 @@ public class EnemigoVisual {
         avisoEmbestida.setStroke(Color.ORANGERED);
         avisoEmbestida.setStrokeWidth(5);
         avisoEmbestida.setVisible(false);
-        grupo.getChildren().add(avisoEmbestida);
+        avisoDireccion.setStroke(Color.ORANGERED);
+        avisoDireccion.setStrokeWidth(4);
+        avisoDireccion.setVisible(false);
+        grupo.getChildren().addAll(avisoEmbestida, avisoDireccion);
+        for (int i = 0; i < 3; i++) {
+            Circle zona = new Circle(0, 0, 48, Color.rgb(255, 50, 30, 0.25));
+            zona.setStroke(Color.ORANGERED);
+            zona.setStrokeWidth(3);
+            zona.setVisible(false);
+            avisosZonas.add(zona);
+            grupo.getChildren().add(zona);
+        }
         actualizarBarraVida();
     }
 
     /**
      * Actualiza los datos del registro existente usando una consulta parametrizada.
      */
-    public void actualizar(double jugadorX, double jugadorY, double deltaTiempo) {
-        if (deltaTiempo <= 0) return;
-        xAnterior = x;
-        yAnterior = y;
-        if (esJefe) actualizarJefe(jugadorX, jugadorY, deltaTiempo);
-        else moverHacia(jugadorX, jugadorY, velocidad, deltaTiempo);
-        limitarMovimiento();
+    /** Recibe la posición calculada por el servicio de IA y solo actualiza la representación. */
+    public void actualizarPosicion(double nuevaX, double nuevaY) {
+        enemigo.moverA(nuevaX, nuevaY);
+        sincronizarVisual();
+    }
+
+    private void sincronizarVisual() {
+        double x = enemigo.getX();
+        double y = enemigo.getY();
         AssetVisual.moverAlCentro(visual, x, y, tamanoVisual, tamanoVisual);
         fondoVida.setX(x - fondoVida.getWidth() / 2);
         fondoVida.setY(y - tamanoVisual / 2 - 12);
@@ -169,84 +159,26 @@ public class EnemigoVisual {
         actualizarBarraVida();
     }
 
-    /**
-     * Avanza las fases de persecución, preparación, embestida y recuperación.
-     */
-    private void actualizarJefe(double jugadorX, double jugadorY, double dt) {
-        Jefe jefe = (Jefe) enemigo;
-        double nivel = jefe.getNivelJefe();
-        switch (faseJefe) {
-            case PERSEGUIR:
-                moverHacia(jugadorX, jugadorY, velocidad * 1.22, dt);
-                tiempoFase -= dt;
-                if (tiempoFase <= 0) {
-                    double dx = jugadorX - x;
-                    double dy = jugadorY - y;
-                    double distancia = Math.max(1, Math.hypot(dx, dy));
-                    direccionDashX = dx / distancia;
-                    direccionDashY = dy / distancia;
-                    faseJefe = FaseJefe.PREPARAR;
-                    tiempoFase = Math.max(0.30, 0.62 - nivel * 0.025);
-                    avisoEmbestida.setVisible(true);
-                }
-                break;
-            case PREPARAR:
-                // El jefe marca la embestida y fija la direccion para dar una ventana de reaccion.
-                tiempoFase -= dt;
-                if (tiempoFase <= 0) {
-                    faseJefe = FaseJefe.EMBESTIR;
-                    tiempoFase = Math.max(0.30, 0.58 - nivel * 0.018);
-                    avisoEmbestida.setVisible(false);
-                }
-                break;
-            case EMBESTIR:
-                double velocidadDash = Math.min(560 + nivel * 55, 1050);
-                x += direccionDashX * velocidadDash * dt;
-                y += direccionDashY * velocidadDash * dt;
-                tiempoFase -= dt;
-                if (tiempoFase <= 0 || x <= 78 || x >= 922 || y <= 78 || y >= 622) {
-                    faseJefe = FaseJefe.RECUPERAR;
-                    tiempoFase = Math.max(0.32, 0.78 - nivel * 0.035);
-                }
-                break;
-            case RECUPERAR:
-                tiempoFase -= dt;
-                if (tiempoFase <= 0) {
-                    faseJefe = FaseJefe.PERSEGUIR;
-                    // El cooldown baja con el nivel para que los mapas superiores sean mucho mas agresivos.
-                    tiempoFase = Math.max(1.05, 3.0 - nivel * 0.24);
-                }
-                break;
-            default:
-                break;
+    /** Muestra avisos de ataques decididos por JefeService. */
+    public void mostrarAvisoJefe(String ataque, double dx, double dy, List<double[]> zonas) {
+        double x = enemigo.getX();
+        double y = enemigo.getY();
+        boolean visible = esJefe && ataque != null && !ataque.equals("NINGUNO");
+        avisoEmbestida.setVisible(visible && ataque.equals("RADIAL"));
+        avisoDireccion.setVisible(visible && (ataque.equals("EMBESTIDA") || ataque.equals("DISPARO")));
+        avisoDireccion.setStartX(x);
+        avisoDireccion.setStartY(y);
+        avisoDireccion.setEndX(x + dx * 210);
+        avisoDireccion.setEndY(y + dy * 210);
+        for (int i = 0; i < avisosZonas.size(); i++) {
+            Circle circulo = avisosZonas.get(i);
+            boolean mostrar = visible && ataque.equals("ZONAS") && zonas != null && i < zonas.size();
+            circulo.setVisible(mostrar);
+            if (mostrar) {
+                circulo.setCenterX(zonas.get(i)[0]);
+                circulo.setCenterY(zonas.get(i)[1]);
+            }
         }
-    }
-
-    /**
-     * Normaliza la dirección al objetivo y avanza según velocidad y tiempo transcurrido.
-     */
-    private void moverHacia(double objetivoX, double objetivoY, double velocidadActual, double dt) {
-        /**
-         * Guarda dx para que la clase mantenga su estado interno.
-         */
-        double dx = objetivoX - x;
-        /**
-         * Guarda dy para que la clase mantenga su estado interno.
-         */
-        double dy = objetivoY - y;
-        double distancia = Math.hypot(dx, dy);
-        if (distancia > 1) {
-            x += (dx / distancia) * velocidadActual * dt;
-            y += (dy / distancia) * velocidadActual * dt;
-        }
-    }
-
-    /**
-     * Restringe la posición del enemigo a los límites del escenario.
-     */
-    private void limitarMovimiento() {
-        x = Math.max(75, Math.min(925, x));
-        y = Math.max(75, Math.min(625, y));
     }
 
     /**
@@ -264,21 +196,18 @@ public class EnemigoVisual {
      */
     public double getRadioColision() { return radioColision; }
 
-    /** El contacto durante el dash suma el dano especial del jefe. */
+    /** Daño de contacto normal; el servicio de jefe aplica el extra durante la embestida. */
     /**
      * Devuelve danocontacto sin exponer directamente el atributo.
      */
     public int getDanoContacto() {
-        if (esJefe && faseJefe == FaseJefe.EMBESTIR) {
-            return enemigo.getDano() + ((Jefe) enemigo).getDanoAdicional();
-        }
         return enemigo.getDano();
     }
 
     /**
      * Comprueba esta condición a partir del estado actual y devuelve el resultado.
      */
-    public boolean estaEmbestidaActiva() { return esJefe && faseJefe == FaseJefe.EMBESTIR; }
+    public boolean estaEmbestidaActiva() { return avisoDireccion.isVisible(); }
     /**
      * Devuelve enemigo sin exponer directamente el atributo.
      */
@@ -290,17 +219,17 @@ public class EnemigoVisual {
     /**
      * Devuelve coordenada X sin exponer directamente el atributo.
      */
-    public double getX() { return x; }
+    public double getX() { return enemigo.getX(); }
     /**
      * Devuelve coordenada Y sin exponer directamente el atributo.
      */
-    public double getY() { return y; }
+    public double getY() { return enemigo.getY(); }
     /**
      * Devuelve coordenada X anterior sin exponer directamente el atributo.
      */
-    public double getXAnterior() { return xAnterior; }
+    public double getXAnterior() { return enemigo.getXAnterior(); }
     /**
      * Devuelve coordenada Y anterior sin exponer directamente el atributo.
      */
-    public double getYAnterior() { return yAnterior; }
+    public double getYAnterior() { return enemigo.getYAnterior(); }
 }

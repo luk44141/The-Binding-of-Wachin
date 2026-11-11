@@ -70,4 +70,25 @@ CREATE TABLE IF NOT EXISTS invocaciones_partida (
         ON DELETE CASCADE
 );
 
+-- Tres espacios locales compartidos en esta instalación de MySQL.
+CREATE TABLE IF NOT EXISTS partida_slots (
+    slot_numero TINYINT NOT NULL PRIMARY KEY,
+    partida_id INT NULL UNIQUE,
+    CONSTRAINT chk_partida_slot CHECK (slot_numero BETWEEN 1 AND 3),
+    FOREIGN KEY (partida_id) REFERENCES partidas(id) ON DELETE SET NULL
+);
+
+INSERT IGNORE INTO partida_slots (slot_numero, partida_id) VALUES
+    (1, NULL), (2, NULL), (3, NULL);
+
+-- Instantánea completa y versionada: añade estado sin invalidar las tablas existentes.
+CREATE TABLE IF NOT EXISTS partida_snapshot (
+    partida_id INT NOT NULL PRIMARY KEY,
+    version_snapshot SMALLINT NOT NULL,
+    payload LONGBLOB NOT NULL,
+    fecha_guardado DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (partida_id) REFERENCES partidas(id) ON DELETE CASCADE
+);
+
 SHOW TABLES;

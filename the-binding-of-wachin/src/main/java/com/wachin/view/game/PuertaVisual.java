@@ -1,7 +1,8 @@
 package com.wachin.view.game;
 
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 
 /**
  * Representa una salida y muestra visualmente si está abierta o cerrada.
@@ -25,7 +26,9 @@ public class PuertaVisual {
     /**
      * Guarda visual para que la clase mantenga su estado interno.
      */
-    private final Rectangle visual;
+    private final Group visual = new Group();
+    private final Node puertaCerrada;
+    private final Node puertaAbierta;
 
     /**
      * Guarda abierta para que la clase mantenga su estado interno.
@@ -36,23 +39,28 @@ public class PuertaVisual {
      * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
      */
     public PuertaVisual(Direccion direccion) {
+        if (direccion == null) throw new IllegalArgumentException("La dirección de la puerta es obligatoria.");
         this.direccion = direccion;
+        double x;
+        double y;
+        double ancho;
+        double alto;
 
         switch (direccion) {
             case ARRIBA:
-                visual = new Rectangle(465, 43, 70, 35);
+                x = 500; y = 60; ancho = 70; alto = 35;
                 break;
 
             case ABAJO:
-                visual = new Rectangle(465, 622, 70, 35);
+                x = 500; y = 640; ancho = 70; alto = 35;
                 break;
 
             case IZQUIERDA:
-                visual = new Rectangle(43, 315, 35, 70);
+                x = 60; y = 350; ancho = 35; alto = 70;
                 break;
 
             case DERECHA:
-                visual = new Rectangle(922, 315, 35, 70);
+                x = 940; y = 350; ancho = 35; alto = 70;
                 break;
 
             default:
@@ -61,8 +69,11 @@ public class PuertaVisual {
                 );
         }
 
-        visual.setStroke(Color.BLACK);
-        visual.setStrokeWidth(3);
+        puertaCerrada = AssetVisual.crearBloque("assets/images/environment/doors/closed.png",
+                x, y, ancho, alto, Color.rgb(100, 45, 25), Color.BLACK, 3);
+        puertaAbierta = AssetVisual.crearBloque("assets/images/environment/doors/open.png",
+                x, y, ancho, alto, Color.GOLD, Color.BLACK, 3);
+        visual.getChildren().addAll(puertaCerrada, puertaAbierta);
 
         setAbierta(false);
     }
@@ -73,11 +84,8 @@ public class PuertaVisual {
     public void setAbierta(boolean abierta) {
         this.abierta = abierta;
 
-        if (abierta) {
-            visual.setFill(Color.GOLD);
-        } else {
-            visual.setFill(Color.rgb(100, 45, 25));
-        }
+        puertaAbierta.setVisible(abierta);
+        puertaCerrada.setVisible(!abierta);
     }
 
     /**
@@ -97,7 +105,7 @@ public class PuertaVisual {
     /**
      * Devuelve nodo visual sin exponer directamente el atributo.
      */
-    public Rectangle getVisual() {
+    public Group getVisual() {
         return visual;
     }
 }

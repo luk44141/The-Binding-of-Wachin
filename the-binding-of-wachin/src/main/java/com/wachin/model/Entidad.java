@@ -153,4 +153,11 @@ public abstract class Entidad implements Atacable {
         if (vida + cantidad > vidaMaxima) throw new VidaMaximaException("La vida no puede superar la vida maxima.");
         vida += cantidad;
     }
+
+    /** Aumenta el máximo y cura exactamente la cantidad añadida, sin excederlo. */
+    public void aumentarVidaMaxima(int cantidad) {
+        if (cantidad <= 0) throw new IllegalArgumentException("El aumento de vida máxima debe ser positivo.");
+        vidaMaxima = Math.addExact(vidaMaxima, cantidad);
+        vida = Math.min(vidaMaxima, Math.addExact(vida, cantidad));
+    }
 }

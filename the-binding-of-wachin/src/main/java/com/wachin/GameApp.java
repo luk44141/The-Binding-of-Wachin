@@ -1,6 +1,7 @@
 package com.wachin;
 
 import com.wachin.controller.PartidaController;
+import com.wachin.model.EstadoPartida;
 import com.wachin.view.game.PartidaView;
 import com.wachin.view.menu.MenuInicial;
 
@@ -31,16 +32,15 @@ public class GameApp extends Application {
         stage.setTitle("The Binding of Wachin");
         stage.setResizable(false);
 
-        Scene escenaMenu = new Scene(
-                MenuInicial.crear(
-                        configuracion -> iniciarPartida(stage, configuracion)
-                ),
-                PartidaView.ANCHO,
-                PartidaView.ALTO
-        );
-
-        stage.setScene(escenaMenu);
+        mostrarMenuInicial();
         stage.show();
+    }
+
+    private void mostrarMenuInicial() {
+        Scene escenaMenu = new Scene(MenuInicial.crear(
+                configuracion -> iniciarPartida(stage, configuracion)),
+                PartidaView.ANCHO, PartidaView.ALTO);
+        stage.setScene(escenaMenu);
     }
 
     /**
@@ -49,6 +49,12 @@ public class GameApp extends Application {
     private void iniciarPartida(
             Stage stage,
             ConfiguracionPartida configuracion) {
+        iniciarPartida(stage, configuracion, null);
+    }
+
+    /** Carga una instantánea completa y conserva el ciclo normal de vida de la escena. */
+    private void iniciarPartida(Stage stage, ConfiguracionPartida configuracion,
+            EstadoPartida estadoInicial) {
 
         if (partidaController != null) {
             partidaController.detener();
@@ -59,7 +65,11 @@ public class GameApp extends Application {
         partidaController = new PartidaController(
                 vista,
                 configuracion,
-                this::mostrarReintento
+                this::mostrarReintento,
+                estado -> iniciarPartida(stage,
+                        new ConfiguracionPartida(ConfiguracionPartida.Personaje.valueOf(estado.personaje())), estado),
+                estadoInicial,
+                this::mostrarMenuInicial
         );
 
         Scene escenaPartida = new Scene(
