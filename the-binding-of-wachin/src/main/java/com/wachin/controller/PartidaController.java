@@ -85,7 +85,7 @@ public class PartidaController {
     /**
      * Constante que define tiempo invulnerable para este componente.
      */
-    private static final double TIEMPO_INVULNERABLE = 0.45;
+    private static final double TIEMPO_INVULNERABLE = 1.15;
     private static final double TAMANO_JUGADOR = 64;
 
     /**
@@ -332,6 +332,7 @@ public class PartidaController {
             }
             agregarVisualInvocacion(invocacion);
         }
+        reubicarInvocacionesCercaDelJugador();
         java.util.Map<CartaTipo, Integer> cartas = new java.util.EnumMap<>(CartaTipo.class);
         estado.cartas().forEach((tipo, cantidad) -> cartas.put(CartaTipo.valueOf(tipo), cantidad));
         cartaService.restaurar(cartas);
@@ -602,7 +603,21 @@ public class PartidaController {
             }
         }
 
+        reubicarInvocacionesCercaDelJugador();
         actualizarHUD();
+    }
+
+    /**
+     * Reubica las invocaciones dentro de la sala actual, cerca del jugador y separadas entre sí.
+     */
+    private void reubicarInvocacionesCercaDelJugador() {
+        List<Invocacion> activas = juegoService.getInvocacionesActivas();
+        for (int i = 0; i < activas.size(); i++) {
+            double desplazamientoX = activas.size() > 1 ? (i == 0 ? -48 : 48) : -42;
+            double x = Math.max(105, Math.min(895, jugadorX + desplazamientoX));
+            double y = Math.max(105, Math.min(595, jugadorY + 48));
+            activas.get(i).moverA(x, y);
+        }
     }
 
     /**
@@ -770,6 +785,17 @@ public class PartidaController {
             vista.actualizarEstado("PROYECTIL EQUIPADO: " + nuevo.getNombre()
                     + " (DAÑO " + nuevo.getDano() + ")");
         } else if (objeto.getTipo() == TipoObjetoSuelo.CARTA) {
+            if ("SELECCION_CARTAS".equals(objeto.getCodigo())) {
+                objetoSueloService.retirar(objeto.getId());
+                retirarObjetoVisual(objeto);
+                debeAlejarseAntesDeRecoger = true;
+                recompensaCartaPendiente = true;
+                pausado = true;
+                vista.mostrarSeleccionCartas(cartaService.elegirTresCartasDiferentes(),
+                        this::completarSeleccionCarta);
+                vista.actualizarEstado("ELEGÍ UNA DE TRES CARTAS");
+                return;
+            }
             CartaTipo carta;
             try { carta = CartaTipo.valueOf(objeto.getCodigo()); }
             catch (IllegalArgumentException e) { return; }
@@ -856,6 +882,7 @@ public class PartidaController {
     }
 
     private boolean cartaDisponible(ObjetoSuelo objeto) {
+        if ("SELECCION_CARTAS".equals(objeto.getCodigo())) return true;
         try { return cartaService.puedeObtener(CartaTipo.valueOf(objeto.getCodigo())); }
         catch (IllegalArgumentException e) { return false; }
     }
@@ -1183,8 +1210,10 @@ public class PartidaController {
 
     private List<ColisionService.Obstaculo> obstaculosParaJugador() {
         List<ColisionService.Obstaculo> obstaculos = new ArrayList<>();
-        for (EnemigoVisual enemigo : enemigosVisuales)
-            obstaculos.add(new ColisionService.Obstaculo(enemigo.getX(), enemigo.getY(), enemigo.getRadioColision()));
+        if (tiempoInvulnerable <= 0) {
+            for (EnemigoVisual enemigo : enemigosVisuales)
+                obstaculos.add(new ColisionService.Obstaculo(enemigo.getX(), enemigo.getY(), enemigo.getRadioColision()));
+        }
         for (Invocacion invocacion : juegoService.getInvocacionesActivas())
             obstaculos.add(new ColisionService.Obstaculo(invocacion.getX(), invocacion.getY(), 20));
         return obstaculos;
@@ -1192,9 +1221,10 @@ public class PartidaController {
 
     private List<ColisionService.Obstaculo> obstaculosParaEnemigo(EnemigoVisual propio) {
         List<ColisionService.Obstaculo> obstaculos = new ArrayList<>();
-        obstaculos.add(new ColisionService.Obstaculo(jugadorX, jugadorY, 27));
-        for (EnemigoVisual otro : enemigosVisuales) if (otro != propio)
-            obstaculos.add(new ColisionService.Obstaculo(otro.getX(), otro.getY(), otro.getRadioColision()));
+        if (tiempoInvulnerable <= 0) {
+            obstaculos.add(new ColisionService.Obstaculo(jugadorX, jugadorY, 27));
+        }
+        // Los enemigos no se bloquean entre si: evita que los Poli queden trabados contra los Tiradores.
         for (Invocacion invocacion : juegoService.getInvocacionesActivas())
             obstaculos.add(new ColisionService.Obstaculo(invocacion.getX(), invocacion.getY(), 20));
         return obstaculos;
@@ -1293,8 +1323,13 @@ public class PartidaController {
                             cartaService.puedeObtener(CartaTipo.SEGUNDO_ESPACIO_INVOCACION),
                             tiposInvocacionPermitidos())
                             .ifPresent(this::agregarObjetoSueloVisual);
+                } else {
+                    int salaJefe = mapaController.getNumeroSala();
+                    objetoSueloService.crearDropInvocacionJefe(salaJefe,
+                            enemigoVisual.getX(), enemigoVisual.getY(), tiposInvocacionPermitidos())
+                            .ifPresent(this::agregarObjetoSueloVisual);
+                    procesarRecompensaJefe(salaJefe);
                 }
-                if (enemigo instanceof Jefe) procesarRecompensaJefe(mapaController.getNumeroSala());
             }
         } catch (DanoInvalidoException e) {
             System.err.println("Error de combate: " + e.getMessage());
@@ -1356,6 +1391,18 @@ public class PartidaController {
         if (recompensaCartaPendiente) return;
 
         boolean salaLimpia = enemigosVisuales.isEmpty();
+
+        // Cada dos salas completadas aparece una carta seleccionable como objeto del suelo.
+        int salaActual = mapaController.getNumeroSala();
+        if (salaLimpia && salaActual % 2 == 0
+                && !progresionService.cartaGenerada(salaActual)) {
+            progresionService.marcarCartaGenerada(salaActual);
+            double cartaX = Math.max(115, Math.min(885, jugadorX + (jugadorX < 500 ? 72 : -72)));
+            ObjetoSuelo carta = objetoSueloService.crearObjetoSeleccionCartas(
+                    salaActual, cartaX, jugadorY);
+            agregarObjetoSueloVisual(carta);
+            vista.actualizarEstado("APARECIÓ UNA CARTA EN EL SUELO");
+        }
 
         if (salaLimpia && mapaController.getActual().esJefe()
                 && progresionService.esCierreDeProgresion(mapaController.getNumeroSala())) {

@@ -78,6 +78,7 @@ public class EnemigoVisual {
         String rutaAsset = enemigo instanceof Jefe j
                 ? switch (j.getTipoJefe()) {
                     case SALA_10 -> "assets/images/bosses/palinni.png";
+                    case EMISOR_RAYOS -> "assets/images/bosses/emisor_rayos.png";
                     case SALA_15 -> "assets/images/bosses/boss_2/boss.png";
                     case SALA_20 -> "assets/images/bosses/boss_3/boss.png";
                 }
@@ -85,7 +86,8 @@ public class EnemigoVisual {
                         ? "assets/images/enemies/ranged/tirador.png" : "assets/images/enemies/poli.png";
         Color color = enemigo instanceof Jefe j
                 ? (j.getTipoJefe() == Jefe.Tipo.SALA_20 ? Color.DARKRED
-                    : j.getTipoJefe() == Jefe.Tipo.SALA_15 ? Color.DARKORANGE : Color.PURPLE)
+                    : j.getTipoJefe() == Jefe.Tipo.SALA_15 ? Color.DARKORANGE
+                    : j.getTipoJefe() == Jefe.Tipo.EMISOR_RAYOS ? Color.DEEPSKYBLUE : Color.PURPLE)
                 : "TIRADOR".equals(enemigo.getTipoEnemigo()) ? Color.DODGERBLUE : Color.CRIMSON;
         this.visual = enemigo instanceof Jefe j && j.getTipoJefe() != Jefe.Tipo.SALA_10
                 ? AssetVisual.crearBloque(rutaAsset, x, y, tamanoVisual, tamanoVisual,
@@ -165,7 +167,10 @@ public class EnemigoVisual {
         double y = enemigo.getY();
         boolean visible = esJefe && ataque != null && !ataque.equals("NINGUNO");
         avisoEmbestida.setVisible(visible && ataque.equals("RADIAL"));
-        avisoDireccion.setVisible(visible && (ataque.equals("EMBESTIDA") || ataque.equals("DISPARO")));
+        avisoDireccion.setVisible(visible && (ataque.equals("EMBESTIDA")
+                || ataque.equals("DISPARO") || ataque.equals("LASER")));
+        avisoDireccion.setStroke(ataque.equals("LASER") ? Color.CYAN : Color.ORANGERED);
+        avisoDireccion.setStrokeWidth(ataque.equals("LASER") ? 8 : 4);
         avisoDireccion.setStartX(x);
         avisoDireccion.setStartY(y);
         avisoDireccion.setEndX(x + dx * 210);

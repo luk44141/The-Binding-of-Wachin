@@ -42,6 +42,13 @@ public final class ObjetoSueloService {
 
     public Optional<ObjetoSuelo> crearDropEnemigo(int sala, double x, double y,
             boolean puedeSoltarCartaUnica, List<TipoInvocacion> invocacionesPermitidas) {
+        // Las cartas comunes pueden aparecer en el 5% de las muertes de enemigos normales.
+        if (random.nextDouble() < 0.05) {
+            List<CartaTipo> cartasComunes = java.util.Arrays.stream(CartaTipo.values())
+                    .filter(carta -> !carta.esUnica()).toList();
+            CartaTipo carta = cartasComunes.get(random.nextInt(cartasComunes.size()));
+            return Optional.of(crear(TipoObjetoSuelo.CARTA, carta.name(), sala, x, y));
+        }
         double tirada = random.nextDouble();
         if (puedeSoltarCartaUnica && tirada < PROBABILIDAD_CARTA_UNICA) {
             return Optional.of(crear(TipoObjetoSuelo.CARTA,
@@ -63,6 +70,24 @@ public final class ObjetoSueloService {
             return Optional.of(crear(TipoObjetoSuelo.PROYECTIL, codigo, sala, x, y));
         }
         return Optional.empty();
+    }
+
+
+    /** Los jefes siempre pueden dejar una invocacion: 100% en sala 5 y 50% en el resto. */
+    public Optional<ObjetoSuelo> crearDropInvocacionJefe(int sala, double x, double y,
+            List<TipoInvocacion> invocacionesPermitidas) {
+        double probabilidad = sala == 5 ? 1.0 : 0.5;
+        if (random.nextDouble() >= probabilidad
+                || invocacionesPermitidas == null || invocacionesPermitidas.isEmpty()) {
+            return Optional.empty();
+        }
+        TipoInvocacion tipo = invocacionesPermitidas.get(random.nextInt(invocacionesPermitidas.size()));
+        return Optional.of(crear(TipoObjetoSuelo.INVOCACION, tipo.name(), sala, x, y));
+    }
+
+    /** Crea el objeto que inicia la seleccion de una carta al recogerlo. */
+    public ObjetoSuelo crearObjetoSeleccionCartas(int sala, double x, double y) {
+        return crear(TipoObjetoSuelo.CARTA, "SELECCION_CARTAS", sala, x, y);
     }
 
     public List<ObjetoSuelo> listarSala(int sala) {

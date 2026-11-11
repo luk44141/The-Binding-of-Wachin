@@ -7,7 +7,7 @@ import java.util.List;
 public final class EnemigoIAService {
     private static final double ALCANCE_TIRADOR = 350;
     private static final double VELOCIDAD_PROYECTIL = 330;
-    private static final double INTERVALO_DISPARO = 1.65;
+    private static final double INTERVALO_DISPARO = 3.0;
     public record Disparo(double x, double y, double velocidadX, double velocidadY, int dano) { }
     public record Actualizacion(double x, double y, List<Disparo> disparos) { }
 

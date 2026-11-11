@@ -10,7 +10,7 @@ import java.util.Random;
 
 /** Estado de combate y patrones de los jefes. No depende de JavaFX. */
 public final class JefeService {
-    public enum Ataque { DISPARO, RADIAL, EMBESTIDA, ZONAS, NINGUNO }
+    public enum Ataque { DISPARO, RADIAL, EMBESTIDA, ZONAS, LASER, NINGUNO }
     public record Punto(double x, double y) { }
     public record Disparo(double x, double y, double vx, double vy, int dano) { }
     public record Actualizacion(double x, double y, Ataque aviso,
@@ -102,6 +102,49 @@ public final class JefeService {
             return resultado(x, y, aviso, e.direccionX, e.direccionY, disparos, zonas, false);
         }
 
+        // El Emisor mantiene distancia y se desplaza lateralmente mientras prepara un abanico de rayos.
+        if (jefe.getTipoJefe() == Jefe.Tipo.EMISOR_RAYOS) {
+            if (e.fase == Fase.PERSEGUIR) {
+                double lateralX = -dy;
+                double lateralY = dx;
+                double velocidad = jefe.getVelocidad();
+                double avance = distancia > 310 ? 0.55 : distancia < 220 ? -0.45 : 0;
+                x += (dx * avance + lateralX * 0.72) * velocidad * dt;
+                y += (dy * avance + lateralY * 0.72) * velocidad * dt;
+                x = Math.max(85, Math.min(915, x));
+                y = Math.max(85, Math.min(615, y));
+                e.tiempo -= dt;
+                if (e.tiempo <= 0) {
+                    e.ataque = Ataque.LASER;
+                    e.direccionX = dx;
+                    e.direccionY = dy;
+                    e.fase = Fase.PREPARAR;
+                    e.tiempo = 1.05;
+                }
+            } else if (e.fase == Fase.PREPARAR) {
+                aviso = Ataque.LASER;
+                e.tiempo -= dt;
+                if (e.tiempo <= 0) {
+                    e.fase = Fase.EJECUTAR;
+                    ejecutar(jefe, e, x, y, jugadorX, jugadorY, 1.0, disparos, zonas);
+                    e.tiempo = 0.22;
+                }
+            } else if (e.fase == Fase.EJECUTAR) {
+                e.tiempo -= dt;
+                if (e.tiempo <= 0) {
+                    e.fase = Fase.RECUPERAR;
+                    e.tiempo = 1.15;
+                }
+            } else {
+                e.tiempo -= dt;
+                if (e.tiempo <= 0) {
+                    e.fase = Fase.PERSEGUIR;
+                    e.tiempo = 2.2;
+                }
+            }
+            return resultado(x, y, aviso, e.direccionX, e.direccionY, disparos, zonas, false);
+        }
+
         // Los jefes 15 y 20 se aproximan entre ataques y conservan ventana de recuperación.
         if (e.fase == Fase.PERSEGUIR) {
             double velocidad = jefe.getVelocidad() * faseRapida;
@@ -186,6 +229,15 @@ public final class JefeService {
                 }
             }
             case ZONAS -> { /* Las zonas anunciadas se activan desde la actualización del estado. */ }
+            case LASER -> {
+                double anguloBase = Math.atan2(jugadorY - y, jugadorX - x);
+                int cantidad = 7;
+                for (int i = 0; i < cantidad; i++) {
+                    double angulo = anguloBase + (i - (cantidad - 1) / 2.0) * 0.105;
+                    disparos.add(new Disparo(x, y, Math.cos(angulo) * 520,
+                            Math.sin(angulo) * 520, dano + jefe.getDanoAdicional()));
+                }
+            }
             default -> { }
         }
     }

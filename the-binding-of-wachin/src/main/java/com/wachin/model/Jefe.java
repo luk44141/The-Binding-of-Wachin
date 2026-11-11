@@ -8,7 +8,7 @@ import com.wachin.exception.VidaInvalidaException;
  * Especializa Enemigo con nivel y daño adicional; hereda los datos comunes y añade comportamiento de jefe.
  */
 public class Jefe extends Enemigo {
-    public enum Tipo { SALA_10, SALA_15, SALA_20 }
+    public enum Tipo { SALA_10, EMISOR_RAYOS, SALA_15, SALA_20 }
 
     /**
      * Constante que define niveljefe para este componente.

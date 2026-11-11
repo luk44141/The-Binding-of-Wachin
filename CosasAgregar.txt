@@ -8,3 +8,8 @@ Gusano Murcielago Robot(que dispara laser)(Gusano tanquea damage, Murcielago va 
 -Agregar un menú de pausa donde puedas ver tus cartas y tus invocaciones y guardar y cargar partida
 -Hacer que los enemigos y wachin no puedan atravesar a sus enemigos y colisionen y que los enemigos se vayan dispersando para hacerlo mas difícil
 -Agregar Animaciones (Caminar,disparar) (CAPAZ SI CAPAZ NO)
+
+Las invocaciones son muy toscas (quitar collision)
+La gota esta bugeada
+Las colisiones no estan arregladas, los enemigos atraviesan no esquivan
+Los jefes tienen q tener 75% de dropear invocacion

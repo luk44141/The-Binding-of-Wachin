@@ -86,6 +86,7 @@ public class SalaService {
         int extra;
         switch (tipo) {
             case SALA_10 -> { vida = 1500; dano = 18; velocidad = 105; nombre = "Guardián"; especial = "EMBESTIDA"; extra = 19; }
+            case EMISOR_RAYOS -> { vida = 1900; dano = 22; velocidad = 92; nombre = "Emisor de rayos"; especial = "RAYO_GIRATORIO"; extra = 22; }
             case SALA_15 -> { vida = 2600; dano = 24; velocidad = 82; nombre = "Artillero"; especial = "RAFAGA_RADIAL_EMBESTIDA"; extra = 24; }
             case SALA_20 -> { vida = 4600; dano = 32; velocidad = 135; nombre = "Palinni, el Incesante"; especial = "DOS_FASES_ZONAS_DE_IMPACTO"; extra = 32; }
             default -> throw new IllegalArgumentException("Tipo de jefe desconocido.");
@@ -110,10 +111,20 @@ public class SalaService {
          * Guarda dano para que la clase mantenga su estado interno.
          */
         int dano = 7 + nivel * 3;
-        double velocidad = Math.min(85 + nivel * 7.0, 250);
+        double velocidad;
+        if (aDistancia) {
+            velocidad = Math.min(82 + nivel * 3.2, 155);
+        } else {
+            // La variante se decide al generarse y permanece fija durante toda la vida del Poli.
+            int variante = random.nextInt(10);
+            double base = variante < 4 ? 60 : variante < 8 ? 80 : 100;
+            velocidad = Math.min(base + nivel * 2.1, 155);
+        }
         try {
-            return new Enemigo(aDistancia ? "Tirador" : "Poli", vida, dano,
+            Enemigo enemigo = new Enemigo(aDistancia ? "Tirador" : "Poli", vida, dano,
                     aDistancia ? "TIRADOR" : "POLI", velocidad);
+            if (aDistancia) enemigo.iniciarTiempoAtaque(2.0);
+            return enemigo;
         } catch (NombreInvalidoException | VidaInvalidaException | DanoInvalidoException e) {
             throw new IllegalStateException("No se pudo generar un enemigo Poli.", e);
         }

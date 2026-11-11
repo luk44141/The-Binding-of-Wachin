@@ -19,10 +19,17 @@ public final class ProgresionService {
         numeroSalaGlobal = numero;
     }
     public boolean marcarRecompensaEntregada(int sala) {
-        if (recompensaDeSala(sala) == null || recompensaDeSala(sala) == Recompensa.SIN_RECOMPENSA_DEFINIDA) return false;
+        if (sala < 1) return false;
         return recompensasEntregadas.add(sala);
     }
     public boolean recompensaEntregada(int sala) { return recompensasEntregadas.contains(sala); }
+    /** Guarda por separado si ya se genero la carta de una sala par usando su numero negativo. */
+    public boolean marcarCartaGenerada(int sala) {
+        return sala > 0 && recompensasEntregadas.add(-sala);
+    }
+    public boolean cartaGenerada(int sala) {
+        return sala > 0 && recompensasEntregadas.contains(-sala);
+    }
     public Set<Integer> getRecompensasEntregadas() { return Set.copyOf(recompensasEntregadas); }
     public void restaurarRecompensasEntregadas(Set<Integer> salas) {
         recompensasEntregadas.clear();
@@ -31,15 +38,16 @@ public final class ProgresionService {
 
     public static Jefe.Tipo jefeDeSala(int numeroGlobal) {
         return switch (numeroGlobal) {
-            case 5 -> Jefe.Tipo.SALA_10;
-            case 10 -> Jefe.Tipo.SALA_10;
+            case 5 -> Jefe.Tipo.SALA_10; // Conserva el jefe original de la sala 5.
+            case 10 -> Jefe.Tipo.EMISOR_RAYOS;
             case 15 -> Jefe.Tipo.SALA_15;
             case 20 -> Jefe.Tipo.SALA_20;
-            default -> null;
+            default -> numeroGlobal >= 25 && (numeroGlobal - 25) % 20 == 0
+                    ? Jefe.Tipo.EMISOR_RAYOS : null;
         };
     }
 
-    public static boolean esCierreDeProgresion(int numeroGlobal) { return numeroGlobal == 20; }
+    public static boolean esCierreDeProgresion(int numeroGlobal) { return false; }
 
     /** La profundidad se reinicia cada cinco salas globales; el mapa avanza al siguiente bloque. */
     public static UbicacionSala ubicacionDeSala(int numeroGlobal) {
@@ -52,11 +60,6 @@ public final class ProgresionService {
     }
 
     public static Recompensa recompensaDeSala(int numeroGlobal) {
-        return switch (numeroGlobal) {
-            case 10 -> Recompensa.AUMENTAR_VIDA_MAXIMA;
-            case 15 -> Recompensa.ELEGIR_CARTA;
-            case 20 -> Recompensa.SIN_RECOMPENSA_DEFINIDA;
-            default -> null;
-        };
+        return numeroGlobal == 10 ? Recompensa.AUMENTAR_VIDA_MAXIMA : null;
     }
 }
