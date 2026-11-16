@@ -1,6 +1,7 @@
 package com.wachin.controller;
 
 import com.wachin.model.Enemigo;
+import com.wachin.exception.PuertaBloqueadaException;
 import com.wachin.model.Jefe;
 import com.wachin.model.Sala;
 import com.wachin.service.ProgresionService;
@@ -18,6 +19,8 @@ final class SalaController {
     private final ContextoPartida ctx;
     private final ObjetosController objetos;
     private final InvocacionesController invocaciones;
+    /** Evita repetir el aviso mientras el jugador permanece frente a la misma puerta cerrada. */
+    private boolean avisoPuertaBloqueadaActivo;
 
     SalaController(ContextoPartida ctx, ObjetosController objetos, InvocacionesController invocaciones) {
         this.ctx = ctx;
@@ -95,9 +98,15 @@ final class SalaController {
 
     // ───────────────────────────── puertas ─────────────────────────────
 
-    /** Si el jugador cruza una puerta abierta, inicia la transición. Devuelve {@code true} en ese caso. */
+    /**
+     * Detecta el intento de cruzar una puerta. Si está cerrada (por enemigos o porque es
+     * la puerta de entrada que no permite volver), informa el bloqueo mediante una excepción.
+     */
     boolean detectarPuerta() {
-        if (!ctx.puertasAbiertas || !ctx.partidaActiva()) return false;
+        if (!ctx.partidaActiva()) {
+            avisoPuertaBloqueadaActivo = false;
+            return false;
+        }
         boolean centroX = Math.abs(ctx.x - 500) <= 55;
         boolean centroY = Math.abs(ctx.y - 350) <= 55;
         PuertaVisual.Direccion direccion = null;
@@ -105,17 +114,50 @@ final class SalaController {
         else if (ctx.y >= 620 && centroX) direccion = PuertaVisual.Direccion.ABAJO;
         else if (ctx.x <= 80 && centroY) direccion = PuertaVisual.Direccion.IZQUIERDA;
         else if (ctx.x >= 920 && centroY) direccion = PuertaVisual.Direccion.DERECHA;
-        if (direccion == null) return false;
-        MapaController.SalaNodo destino = ctx.mapa.entrarPor(direccion);
-        if (destino == null) return false;
-        PuertaVisual.Direccion salida = direccion;
-        ctx.enTransicion = true;
-        ctx.efectos.puertasAbiertas();
-        ctx.vista.transicionar(() -> {
-            colocarJugadorEnEntrada(salida);
-            prepararSala(destino);
-        }, () -> ctx.enTransicion = false);
-        return true;
+
+        if (direccion == null) {
+            avisoPuertaBloqueadaActivo = false;
+            return false;
+        }
+
+        MapaController.SalaNodo nodo = ctx.mapa.getActual();
+        if (nodo == null) {
+            avisoPuertaBloqueadaActivo = false;
+            return false;
+        }
+        boolean esSalida = nodo.getDireccionesSalida().contains(direccion);
+        boolean esEntrada = direccion == nodo.getDireccionEntrada();
+        // No mostrar avisos al chocar contra una pared donde no hay una puerta visible.
+        if (!esSalida && !esEntrada) {
+            avisoPuertaBloqueadaActivo = false;
+            return false;
+        }
+
+        try {
+            if (!ctx.puertasAbiertas || esEntrada) {
+                throw new PuertaBloqueadaException();
+            }
+            MapaController.SalaNodo destino = ctx.mapa.entrarPor(direccion);
+            if (destino == null) {
+                throw new PuertaBloqueadaException();
+            }
+
+            avisoPuertaBloqueadaActivo = false;
+            PuertaVisual.Direccion salida = direccion;
+            ctx.enTransicion = true;
+            ctx.efectos.puertasAbiertas();
+            ctx.vista.transicionar(() -> {
+                colocarJugadorEnEntrada(salida);
+                prepararSala(destino);
+            }, () -> ctx.enTransicion = false);
+            return true;
+        } catch (PuertaBloqueadaException excepcion) {
+            if (!avisoPuertaBloqueadaActivo) {
+                ctx.vista.mostrarAviso(excepcion.getMessage(), Tono.MALO);
+                avisoPuertaBloqueadaActivo = true;
+            }
+            return false;
+        }
     }
 
     private void colocarJugadorEnEntrada(PuertaVisual.Direccion salidaAnterior) {
