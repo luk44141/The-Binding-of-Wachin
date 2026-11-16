@@ -8,7 +8,6 @@ import com.wachin.model.Enemigo;
 import com.wachin.model.Invocacion;
 import com.wachin.model.Jugador;
 import com.wachin.model.TipoInvocacion;
-import java.util.Comparator;
 import java.util.List;
 
 /** Movimiento, protección, energía y ataques automáticos de las invocaciones. */
@@ -41,11 +40,19 @@ public final class InvocacionService {
         invocacion.reducirTiempoAtaque(dt);
         invocacion.recuperarEnergia(dt);
         TipoInvocacion tipo = invocacion.getTipoInvocacion();
-        Objetivo objetivo = objetivos == null ? null : objetivos.stream()
-                .filter(o -> o != null && o.enemigo() != null && o.enemigo().getVida() > 0)
-                .filter(o -> distancia(invocacion.getX(), invocacion.getY(), o.x(), o.y()) <= tipo.getRangoDeteccion())
-                .min(Comparator.comparingDouble(o -> distancia(invocacion.getX(), invocacion.getY(), o.x(), o.y())))
-                .orElse(null);
+        Objetivo objetivo = null;
+        double distanciaMinima = tipo.getRangoDeteccion();
+        if (objetivos != null) {
+            for (Objetivo candidato : objetivos) {
+                if (candidato == null || candidato.enemigo() == null || candidato.enemigo().getVida() <= 0) continue;
+                double distancia = distancia(invocacion.getX(), invocacion.getY(), candidato.x(), candidato.y());
+                if (distancia <= tipo.getRangoDeteccion()
+                        && (objetivo == null || distancia < distanciaMinima)) {
+                    distanciaMinima = distancia;
+                    objetivo = candidato;
+                }
+            }
+        }
 
         double destinoX = jugadorX + (invocacion.getEspacio() == 0 ? -52 : 52);
         double destinoY = jugadorY + 42;

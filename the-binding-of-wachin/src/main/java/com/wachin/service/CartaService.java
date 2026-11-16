@@ -3,6 +3,7 @@ package com.wachin.service;
 import com.wachin.model.Carta;
 import com.wachin.model.CartaTipo;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Random;
 /** Inventario de cartas de una partida y selección de recompensas. */
 public final class CartaService {
     private final Map<CartaTipo, Integer> cantidades = new EnumMap<>(CartaTipo.class);
+    private final Map<CartaTipo, Integer> vistaCantidades = Collections.unmodifiableMap(cantidades);
     private final Random random;
     public CartaService() { this(new Random()); }
     public CartaService(Random random) {
@@ -37,6 +39,8 @@ public final class CartaService {
     }
     public int cantidad(CartaTipo tipo) { return cantidades.getOrDefault(tipo, 0); }
     public Map<CartaTipo, Integer> instantanea() { return Map.copyOf(cantidades); }
+    /** Vista de solo lectura para la interfaz; evita copiar el inventario en cada fotograma. */
+    public Map<CartaTipo, Integer> vista() { return vistaCantidades; }
     public void restaurar(Map<CartaTipo, Integer> estado) {
         cantidades.clear();
         if (estado == null) return;

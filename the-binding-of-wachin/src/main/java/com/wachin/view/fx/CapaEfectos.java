@@ -2,7 +2,9 @@ package com.wachin.view.fx;
 
 import com.wachin.service.AjustesService;
 import com.wachin.view.ui.Tema;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Random;
 import javafx.scene.canvas.Canvas;
@@ -41,6 +43,8 @@ public final class CapaEfectos {
     private final GraphicsContext g;
     private final List<Particula> particulas = new ArrayList<>();
     private final List<Texto> textos = new ArrayList<>();
+    private final Deque<Particula> particulasLibres = new ArrayDeque<>();
+    private final Deque<Texto> textosLibres = new ArrayDeque<>();
     private final Random azar = new Random();
     private final java.util.Map<Integer, Font> fuentes = new java.util.HashMap<>();
     private final AjustesService ajustes;
@@ -62,7 +66,13 @@ public final class CapaEfectos {
 
     private Particula nueva() {
         if (particulas.size() >= MAX_PARTICULAS) return null;
-        Particula p = new Particula();
+        Particula p = particulasLibres.pollFirst();
+        if (p == null) p = new Particula();
+        p.x = p.y = p.vx = p.vy = p.vida = p.duracion = 0;
+        p.radio = p.radioFinal = p.friccion = p.gravedad = 0;
+        p.color = null;
+        p.brillante = false;
+        p.anillo = false;
         particulas.add(p);
         return p;
     }
@@ -163,8 +173,12 @@ public final class CapaEfectos {
 
     /** Texto que asciende y se desvanece (daño, mensajes breves). */
     public void texto(double x, double y, String contenido, Color color, double tamano) {
-        if (textos.size() >= MAX_TEXTOS) textos.remove(0);
-        Texto t = new Texto();
+        if (textos.size() >= MAX_TEXTOS) {
+            Texto retirado = textos.remove(0);
+            textosLibres.addLast(retirado);
+        }
+        Texto t = textosLibres.pollFirst();
+        if (t == null) t = new Texto();
         t.x = x + (azar.nextDouble() - 0.5) * 16; t.y = y;
         t.contenido = contenido; t.color = color; t.tamano = tamano;
         t.duracion = t.vida = 0.8;
@@ -172,6 +186,8 @@ public final class CapaEfectos {
     }
 
     public void limpiar() {
+        particulasLibres.addAll(particulas);
+        textosLibres.addAll(textos);
         particulas.clear();
         textos.clear();
         g.clearRect(0, 0, lienzo.getWidth(), lienzo.getHeight());
@@ -193,6 +209,7 @@ public final class CapaEfectos {
             if (p.vida <= 0) {
                 particulas.set(i, particulas.get(particulas.size() - 1));
                 particulas.remove(particulas.size() - 1);
+                particulasLibres.addLast(p);
                 continue;
             }
             double amortiguacion = Math.exp(-p.friccion * dt);
@@ -205,7 +222,11 @@ public final class CapaEfectos {
         for (int i = textos.size() - 1; i >= 0; i--) {
             Texto t = textos.get(i);
             t.vida -= dt;
-            if (t.vida <= 0) { textos.remove(i); continue; }
+            if (t.vida <= 0) {
+                textos.remove(i);
+                textosLibres.addLast(t);
+                continue;
+            }
             t.y -= 46 * dt;
             double progreso = 1 - t.vida / t.duracion;
             double escala = progreso < 0.15 ? 0.6 + progreso / 0.15 * 0.6 : 1.2 - Math.min(0.2, (progreso - 0.15) * 0.4);

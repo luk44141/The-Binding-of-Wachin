@@ -29,6 +29,7 @@ final class JugadorController {
     private final ContextoPartida ctx;
     private final Set<KeyCode> teclas = EnumSet.noneOf(KeyCode.class);
     private final Deque<KeyCode> ordenFlechas = new ArrayDeque<>();
+    private final List<ColisionService.Obstaculo> obstaculosMovimiento = new ArrayList<>();
 
     JugadorController(ContextoPartida ctx) { this.ctx = ctx; }
 
@@ -94,15 +95,16 @@ final class JugadorController {
 
     /** Los enemigos bloquean al jugador salvo durante su invulnerabilidad; las invocaciones nunca. */
     private List<ColisionService.Obstaculo> obstaculos() {
-        List<ColisionService.Obstaculo> lista = new ArrayList<>();
+        obstaculosMovimiento.clear();
         if (ctx.invulnerable <= 0) {
             for (EnemigoVisual enemigo : ctx.enemigos) {
                 if (!enemigo.estaApareciendo()) {
-                    lista.add(new ColisionService.Obstaculo(enemigo.getX(), enemigo.getY(), enemigo.getRadioColision()));
+                    obstaculosMovimiento.add(new ColisionService.Obstaculo(
+                            enemigo.getX(), enemigo.getY(), enemigo.getRadioColision()));
                 }
             }
         }
-        return lista;
+        return obstaculosMovimiento;
     }
 
     private void dispararSiCorresponde(Jugador jugador) {

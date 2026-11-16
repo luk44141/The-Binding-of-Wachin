@@ -61,17 +61,24 @@ public final class ColisionService {
         for (Obstaculo obstaculo : obstaculos) {
             if (obstaculo == null) continue;
             double minimo = radio + obstaculo.radio();
-            double inicial = Math.hypot(x1 - obstaculo.x(), y1 - obstaculo.y());
-            double finalDistancia = Math.hypot(x2 - obstaculo.x(), y2 - obstaculo.y());
+            double minimoCuadrado = minimo * minimo;
+            double inicialX = x1 - obstaculo.x();
+            double inicialY = y1 - obstaculo.y();
+            double finalX = x2 - obstaculo.x();
+            double finalY = y2 - obstaculo.y();
+            double inicialCuadrado = inicialX * inicialX + inicialY * inicialY;
+            double finalCuadrado = finalX * finalX + finalY * finalY;
             double dx = x2 - x1, dy = y2 - y1;
             double longitud2 = dx * dx + dy * dy;
             double t = longitud2 == 0 ? 0
                     : ((obstaculo.x() - x1) * dx + (obstaculo.y() - y1) * dy) / longitud2;
             t = Math.max(0, Math.min(1, t));
-            double cercanoX = x1 + t * dx, cercanoY = y1 + t * dy;
-            double minimoTrayecto = Math.hypot(cercanoX - obstaculo.x(), cercanoY - obstaculo.y());
-            boolean yaSuperpuestoYSeAleja = inicial < minimo && finalDistancia > inicial;
-            if (minimoTrayecto < minimo && !yaSuperpuestoYSeAleja) return false;
+            double cercanoX = x1 + t * dx - obstaculo.x();
+            double cercanoY = y1 + t * dy - obstaculo.y();
+            double minimoTrayectoCuadrado = cercanoX * cercanoX + cercanoY * cercanoY;
+            boolean yaSuperpuestoYSeAleja = inicialCuadrado < minimoCuadrado
+                    && finalCuadrado > inicialCuadrado;
+            if (minimoTrayectoCuadrado < minimoCuadrado && !yaSuperpuestoYSeAleja) return false;
         }
         return true;
     }
@@ -125,7 +132,9 @@ public final class ColisionService {
         t = Math.max(0, Math.min(1, t));
         double cercanoX = ax1 + t * dx;
         double cercanoY = ay1 + t * dy;
-        return Math.hypot(bx2 - cercanoX, by2 - cercanoY) <= radio;
+        double distanciaX = bx2 - cercanoX;
+        double distanciaY = by2 - cercanoY;
+        return distanciaX * distanciaX + distanciaY * distanciaY <= radio * radio;
     }
 
     /**

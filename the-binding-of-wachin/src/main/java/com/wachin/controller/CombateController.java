@@ -9,7 +9,6 @@ import com.wachin.model.Proyectil;
 import com.wachin.view.game.EnemigoVisual;
 import com.wachin.view.game.HudView.Tono;
 import com.wachin.view.game.ProyectilVisual;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,7 +54,8 @@ final class CombateController {
 
     private boolean impactarEnemigo(ProyectilVisual visual) {
         Proyectil proyectil = visual.getModelo();
-        for (EnemigoVisual enemigo : new ArrayList<>(ctx.enemigos)) {
+        // La simulacion corre en el hilo JavaFX; si el impacto elimina al enemigo, retornamos enseguida.
+        for (EnemigoVisual enemigo : ctx.enemigos) {
             if (enemigo.estaApareciendo()) continue;
             if (ctx.colision.colisionaProyectilEnemigo(proyectil, enemigo.getXAnterior(), enemigo.getYAnterior(),
                     enemigo.getX(), enemigo.getY(), enemigo.getRadioColision())) {

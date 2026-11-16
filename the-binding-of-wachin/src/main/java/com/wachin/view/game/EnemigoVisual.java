@@ -51,6 +51,7 @@ public class EnemigoVisual {
     private double xPrevio;
     private double mirada = 1;
     private double pulso;
+    private int ultimaVidaMostrada = Integer.MIN_VALUE;
 
     public EnemigoVisual(Enemigo enemigo, double x, double y) {
         if (enemigo == null) throw new IllegalArgumentException("El enemigo no puede ser null.");
@@ -195,12 +196,17 @@ public class EnemigoVisual {
             tiempoDestello -= dt;
             if (tiempoDestello <= 0) sprite.setEffect(null);
         }
-        double fraccion = Math.max(0, Math.min(1, (double) enemigo.getVida() / enemigo.getVidaMaxima()));
-        barraVida.setWidth(fondoVida.getWidth() * fraccion);
-        barraVida.setFill(fraccion <= 0.25 ? Color.web("#ff3a50") : esJefe ? Color.web("#ffc93a") : Color.web("#7ee06a"));
-        boolean mostrarBarra = !esJefe && fraccion < 0.999;
-        fondoVida.setVisible(mostrarBarra);
-        barraVida.setVisible(mostrarBarra);
+        int vidaActual = enemigo.getVida();
+        if (vidaActual != ultimaVidaMostrada) {
+            ultimaVidaMostrada = vidaActual;
+            double fraccion = Math.max(0, Math.min(1, (double) vidaActual / enemigo.getVidaMaxima()));
+            barraVida.setWidth(fondoVida.getWidth() * fraccion);
+            barraVida.setFill(fraccion <= 0.25 ? Color.web("#ff3a50")
+                    : esJefe ? Color.web("#ffc93a") : Color.web("#7ee06a"));
+            boolean mostrarBarra = !esJefe && fraccion < 0.999;
+            fondoVida.setVisible(mostrarBarra);
+            barraVida.setVisible(mostrarBarra);
+        }
         if (lanzador.isVisible()) {
             double parpadeo = 0.55 + 0.45 * Math.sin(tiempo * 24);
             lanzador.setOpacity(parpadeo);
@@ -213,7 +219,7 @@ public class EnemigoVisual {
     }
 
     /** Muestra los avisos de ataque que decide {@code JefeService}. */
-    public void mostrarAvisoJefe(JefeService.Ataque ataque, double dx, double dy, List<double[]> zonasAviso) {
+    public void mostrarAvisoJefe(JefeService.Ataque ataque, double dx, double dy, List<JefeService.Punto> zonasAviso) {
         boolean visible = esJefe && ataque != null && ataque != JefeService.Ataque.NINGUNO;
         anillo.setVisible(visible && ataque == JefeService.Ataque.RADIAL);
         if (anillo.isVisible()) anillo.setRadius(radioColision + 14 + 10 * Math.abs(Math.sin(tiempo * 12)));
@@ -235,8 +241,8 @@ public class EnemigoVisual {
             boolean mostrar = visible && ataque == JefeService.Ataque.ZONAS && zonasAviso != null && i < zonasAviso.size();
             circulo.setVisible(mostrar);
             if (mostrar) {
-                circulo.setCenterX(zonasAviso.get(i)[0]);
-                circulo.setCenterY(zonasAviso.get(i)[1]);
+                circulo.setCenterX(zonasAviso.get(i).x());
+                circulo.setCenterY(zonasAviso.get(i).y());
                 circulo.setRadius(46 + 4 * Math.sin(tiempo * 14));
             }
         }

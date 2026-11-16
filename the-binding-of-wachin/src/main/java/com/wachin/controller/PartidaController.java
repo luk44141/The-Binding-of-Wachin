@@ -222,7 +222,7 @@ public final class PartidaController {
         Jugador actual = ctx.jugador();
         vista.actualizarHUD(actual, ctx.enemigos.size(), nodo.getMapa(), ctx.mapa.getNumeroSala(), nodo.getProfundidad(),
                 nodo.esJefe(), ctx.jugadorServicio.experienciaNecesaria(actual.getNivel()),
-                ctx.juego.getInvocacionesActivas(), ctx.cartas.instantanea());
+                ctx.juego.getInvocacionesActivas(), ctx.cartas.vista());
         Jefe jefe = ctx.juego.getJefe();
         if (jefe != null) vista.mostrarBarraJefe(jefe);
         else vista.ocultarBarraJefe();

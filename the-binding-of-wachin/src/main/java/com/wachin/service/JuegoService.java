@@ -16,6 +16,7 @@ public class JuegoService {
     private Jugador jugador;
     private final List<Enemigo> enemigos = new ArrayList<>();
     private final List<Invocacion> invocacionesActivas = new ArrayList<>();
+    private final List<Invocacion> invocacionesActivasVista = Collections.unmodifiableList(invocacionesActivas);
     private Jefe jefe;
 
     /**
@@ -34,7 +35,7 @@ public class JuegoService {
     /**
      * Devuelve invocaciones activas sin exponer directamente el atributo.
      */
-    public List<Invocacion> getInvocacionesActivas() { return Collections.unmodifiableList(invocacionesActivas); }
+    public List<Invocacion> getInvocacionesActivas() { return invocacionesActivasVista; }
     public Jefe getJefe() { return jefe; }
 
     /**

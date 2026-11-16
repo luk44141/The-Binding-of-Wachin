@@ -25,6 +25,10 @@ final class EnemigosController {
 
     private final ContextoPartida ctx;
     private final CombateController combate;
+    private final List<ColisionService.Obstaculo> obstaculosOtros = new ArrayList<>();
+    private final List<ColisionService.Obstaculo> bloqueosMovimiento = new ArrayList<>();
+    private double destinoJefeX;
+    private double destinoJefeY;
     private boolean zonasActivasPrevias;
 
     EnemigosController(ContextoPartida ctx, CombateController combate) {
@@ -33,19 +37,19 @@ final class EnemigosController {
     }
 
     void actualizar(double dt) {
-        List<EnemigoVisual> actuales = new ArrayList<>(ctx.enemigos);
         boolean activa = ctx.partidaActiva();
         boolean jefePresente = false;
-        for (EnemigoVisual visual : actuales) {
+        // No hay altas/bajas de enemigos durante este recorrido; se puede iterar la lista original.
+        for (EnemigoVisual visual : ctx.enemigos) {
             visual.actualizar(dt);
             if (!activa || visual.estaApareciendo()) continue;
             double deseadoX;
             double deseadoY;
             if (visual.getEnemigo() instanceof Jefe jefe) {
                 jefePresente = true;
-                double[] destino = actualizarJefe(visual, jefe, dt);
-                deseadoX = destino[0];
-                deseadoY = destino[1];
+                actualizarJefe(visual, jefe, dt);
+                deseadoX = destinoJefeX;
+                deseadoY = destinoJefeY;
             } else {
                 EnemigoIAService.Actualizacion accion = ctx.enemigoIA.actualizar(visual.getEnemigo(),
                         visual.getX(), visual.getY(), ctx.x, ctx.y, dt);
@@ -54,34 +58,42 @@ final class EnemigosController {
                             disparo.dano(), Proyectil.Origen.ENEMIGO, CatalogoAssets.PROYECTIL_TIRADOR, COLOR_TIRADOR);
                     ctx.efectos.disparo(disparo.x(), disparo.y(), disparo.velocidadX() / 330, disparo.velocidadY() / 330, COLOR_TIRADOR);
                 }
-                ColisionService.Obstaculo[] otros = obstaculosDeOtros(visual, actuales);
+                cargarObstaculosOtros(visual);
                 ColisionService.Posicion empuje = ctx.colision.empujeSeparacion(visual.getX(), visual.getY(),
-                        visual.getRadioColision(), List.of(otros), 1.0);
+                        visual.getRadioColision(), obstaculosOtros, 1.0);
                 deseadoX = accion.x() + empuje.x() * VELOCIDAD_SEPARACION * dt;
                 deseadoY = accion.y() + empuje.y() * VELOCIDAD_SEPARACION * dt;
             }
-            List<ColisionService.Obstaculo> bloqueos = new ArrayList<>();
-            if (ctx.invulnerable <= 0) bloqueos.add(new ColisionService.Obstaculo(ctx.x, ctx.y, ContextoPartida.RADIO_JUGADOR));
-            if (!(visual.getEnemigo() instanceof Jefe)) bloqueos.addAll(List.of(obstaculosDeOtros(visual, actuales)));
+            bloqueosMovimiento.clear();
+            if (ctx.invulnerable <= 0) {
+                bloqueosMovimiento.add(new ColisionService.Obstaculo(ctx.x, ctx.y, ContextoPartida.RADIO_JUGADOR));
+            }
+            if (!(visual.getEnemigo() instanceof Jefe)) {
+                bloqueosMovimiento.addAll(obstaculosOtros);
+            }
             ColisionService.Posicion resuelta = ctx.colision.resolverMovimiento(visual.getX(), visual.getY(),
-                    deseadoX, deseadoY, visual.getRadioColision(), bloqueos, 75, 925, 75, 625);
+                    deseadoX, deseadoY, visual.getRadioColision(), bloqueosMovimiento, 75, 925, 75, 625);
             visual.actualizarPosicion(resuelta.x(), resuelta.y());
             if (comprobarContacto(visual)) break;
         }
         if (!jefePresente) zonasActivasPrevias = false;
     }
 
-    private ColisionService.Obstaculo[] obstaculosDeOtros(EnemigoVisual propio, List<EnemigoVisual> todos) {
-        return todos.stream().filter(o -> o != propio && !o.estaApareciendo())
-                .map(o -> new ColisionService.Obstaculo(o.getX(), o.getY(), o.getRadioColision()))
-                .toArray(ColisionService.Obstaculo[]::new);
+    /** Reconstruye la lista reutilizable de enemigos que bloquean o separan al actual. */
+    private void cargarObstaculosOtros(EnemigoVisual propio) {
+        obstaculosOtros.clear();
+        for (EnemigoVisual otro : ctx.enemigos) {
+            if (otro != propio && !otro.estaApareciendo()) {
+                obstaculosOtros.add(new ColisionService.Obstaculo(
+                        otro.getX(), otro.getY(), otro.getRadioColision()));
+            }
+        }
     }
 
-    private double[] actualizarJefe(EnemigoVisual visual, Jefe jefe, double dt) {
+    private void actualizarJefe(EnemigoVisual visual, Jefe jefe, double dt) {
         JefeService.Actualizacion accion = ctx.jefeServicio.actualizar(jefe, visual.getX(), visual.getY(),
                 ctx.x, ctx.y, dt);
-        List<double[]> zonas = accion.zonas().stream().map(p -> new double[]{p.x(), p.y()}).toList();
-        visual.mostrarAvisoJefe(accion.aviso(), accion.direccionX(), accion.direccionY(), zonas);
+        visual.mostrarAvisoJefe(accion.aviso(), accion.direccionX(), accion.direccionY(), accion.zonas());
         Color color = colorProyectilJefe(jefe.getTipoJefe());
         for (JefeService.Disparo disparo : accion.disparos()) {
             combate.lanzarProyectilHostil(disparo.x(), disparo.y(), disparo.vx(), disparo.vy(), disparo.dano(),
@@ -95,11 +107,16 @@ final class EnemigosController {
             ctx.vista.sacudir(7);
         }
         zonasActivasPrevias = accion.zonasActivas();
-        if (accion.zonasActivas() && ctx.invulnerable <= 0 && accion.zonas().stream()
-                .anyMatch(p -> ctx.colision.distancia(ctx.x, ctx.y, p.x(), p.y()) < RADIO_ZONA)) {
-            combate.recibirDanoJugador(jefe.getDano() + jefe.getDanoAdicional());
+        if (accion.zonasActivas() && ctx.invulnerable <= 0) {
+            for (JefeService.Punto zona : accion.zonas()) {
+                if (ctx.colision.distancia(ctx.x, ctx.y, zona.x(), zona.y()) < RADIO_ZONA) {
+                    combate.recibirDanoJugador(jefe.getDano() + jefe.getDanoAdicional());
+                    break;
+                }
+            }
         }
-        return new double[]{accion.x(), accion.y()};
+        destinoJefeX = accion.x();
+        destinoJefeY = accion.y();
     }
 
     /** Aplica el daño por contacto; devuelve {@code true} si hirió al jugador en este fotograma. */

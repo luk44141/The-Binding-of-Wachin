@@ -17,6 +17,7 @@ final class InvocacionesController {
     private static final double ALCANCE_CUERPO_A_CUERPO = 55;
     private static final Color COLOR_LASER = Color.web("#4fd6e8");
     private final ContextoPartida ctx;
+    private final List<InvocacionService.Objetivo> objetivos = new ArrayList<>();
 
     InvocacionesController(ContextoPartida ctx) {
         this.ctx = ctx;
@@ -48,12 +49,16 @@ final class InvocacionesController {
     }
 
     void actualizar(double dt, CombateController combate) {
-        List<InvocacionService.Objetivo> objetivos = ctx.enemigos.stream()
-                .filter(v -> !v.estaApareciendo())
-                .map(v -> new InvocacionService.Objetivo(v.getEnemigo(), v.getX(), v.getY())).toList();
+        objetivos.clear();
+        for (EnemigoVisual enemigo : ctx.enemigos) {
+            if (!enemigo.estaApareciendo()) {
+                objetivos.add(new InvocacionService.Objetivo(
+                        enemigo.getEnemigo(), enemigo.getX(), enemigo.getY()));
+            }
+        }
         List<Invocacion> activas = ctx.juego.getInvocacionesActivas();
         for (int i = 0; i < activas.size(); i++) activas.get(i).setEspacio(i);
-        for (Invocacion invocacion : new ArrayList<>(activas)) {
+        for (Invocacion invocacion : activas) {
             invocacion.reducirRecargaBloqueoProyectil(dt);
             // Respaldo para partidas guardadas antiguas: ninguna invocación puede quedar muerta.
             if (invocacion.getVida() <= 0) {
@@ -68,7 +73,13 @@ final class InvocacionesController {
     }
 
     private void ejecutarAtaque(Invocacion invocacion, InvocacionService.Ataque ataque, CombateController combate) {
-        EnemigoVisual objetivo = ctx.enemigos.stream().filter(v -> v.getEnemigo() == ataque.objetivo()).findFirst().orElse(null);
+        EnemigoVisual objetivo = null;
+        for (EnemigoVisual enemigo : ctx.enemigos) {
+            if (enemigo.getEnemigo() == ataque.objetivo()) {
+                objetivo = enemigo;
+                break;
+            }
+        }
         if (objetivo == null) return;
         if (ataque.laser()) {
             Proyectil modelo = new Proyectil(ataque.origenX(), ataque.origenY(), ataque.velocidadX(),
