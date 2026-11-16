@@ -95,11 +95,6 @@ mvn clean javafx:run
 
 Los controles de movimiento y combate se utilizan durante la partida. La tecla `ESC` permite abrir el menu de pausa.
 
-## Integrantes
-
-- Luca Caprio
-- Thiago Llano
-
 ## Proyecto integrador
 
 Desarrollado como proyecto academico para aplicar conceptos de Programacion Orientada a Objetos, interfaces, separacion por capas, persistencia de datos y desarrollo de interfaces graficas con JavaFX.
