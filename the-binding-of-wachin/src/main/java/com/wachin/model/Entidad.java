@@ -124,6 +124,11 @@ public abstract class Entidad implements Atacable {
         vida += cantidad;
     }
 
+    /** Restaura la vida actual hasta el máximo, por ejemplo al subir de nivel. */
+    public void restaurarVidaCompleta() {
+        vida = vidaMaxima;
+    }
+
     /** Aumenta el máximo y cura exactamente la cantidad añadida, sin excederlo. */
     public void aumentarVidaMaxima(int cantidad) {
         if (cantidad <= 0) throw new IllegalArgumentException("El aumento de vida máxima debe ser positivo.");

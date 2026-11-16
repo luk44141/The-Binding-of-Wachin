@@ -2,7 +2,8 @@ package com.wachin.model;
 
 /** Catálogo de cartas. Las cartas básicas acumulan el valor indicado por copia. */
 public enum CartaTipo {
-    DANO("Fuerza", "Aumenta el daño de todos los proyectiles", 5, false),
+    DANO("Daño", "Aumenta en 10 el daño de tus proyectiles", 10, false),
+    FUERZA("Fuerza", "Aumenta en 5 el daño de tus proyectiles y de tus invocaciones", 5, false),
     VELOCIDAD("Agilidad", "Aumenta la velocidad de movimiento", 15, false),
     VIDA_MAXIMA("Vitalidad", "Aumenta la vida máxima y cura el aumento", 20, false),
     DANO_INVOCACIONES("Vínculo", "Aumenta el daño de las invocaciones", 5, false),

@@ -21,6 +21,8 @@ public class InvocacionServiceTest {
         Invocacion robot = servicio.crear(TipoInvocacion.ROBOT);
         assertTrue(gusano.getVidaMaxima() > murcielago.getVidaMaxima());
         assertTrue(gusano.getVidaMaxima() > robot.getVidaMaxima());
+        assertTrue("El gusano debe hacer menos daño que el murcielago",
+                gusano.getDano() < murcielago.getDano());
         gusano.moverA(480, 350);
         Jugador jugador = new Jugador("Wachin", 100, 25, 100);
         Enemigo enemigo = new Enemigo("Poli", 100, 5, "POLI", 80);
@@ -49,6 +51,32 @@ public class InvocacionServiceTest {
                 List.of(new InvocacionService.Objetivo(enemigo, 620, 350)), 0.1).ataques();
         assertEquals(1, ataqueRobot.size());
         assertTrue(ataqueRobot.getFirst().laser());
+    }
+
+
+    @Test
+    public void lasInvocacionesNoPuedenMorirPorDano() throws Exception {
+        Invocacion gusano = new InvocacionService().crear(TipoInvocacion.GUSANO);
+        gusano.recibirDano(999999);
+        assertEquals(gusano.getVidaMaxima(), gusano.getVida());
+    }
+
+    @Test
+    public void gusanoBloqueaUnProyectilCadaTresSegundos() throws Exception {
+        InvocacionService servicio = new InvocacionService();
+        Invocacion gusano = servicio.crear(TipoInvocacion.GUSANO);
+        Invocacion murcielago = servicio.crear(TipoInvocacion.MURCIELAGO);
+        Invocacion robot = servicio.crear(TipoInvocacion.ROBOT);
+
+        assertTrue(gusano.puedeBloquearProyectil());
+        gusano.bloquearProyectil();
+        assertFalse(gusano.puedeBloquearProyectil());
+        gusano.reducirRecargaBloqueoProyectil(2.5);
+        assertFalse(gusano.puedeBloquearProyectil());
+        gusano.reducirRecargaBloqueoProyectil(0.5);
+        assertTrue(gusano.puedeBloquearProyectil());
+        assertFalse(murcielago.puedeBloquearProyectil());
+        assertFalse(robot.puedeBloquearProyectil());
     }
 
     @Test

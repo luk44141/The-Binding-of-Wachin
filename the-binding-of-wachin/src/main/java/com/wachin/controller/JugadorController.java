@@ -21,7 +21,8 @@ final class JugadorController {
 
     static final double VELOCIDAD_PROYECTIL = 430;
     /** Segundos entre disparos. Mantener una flecha pulsada dispara de forma continua a este ritmo. */
-    static final double INTERVALO_DISPARO = 0.24;
+    static final double INTERVALO_DISPARO = 0.30;
+    private static final double INTERVALO_LAGRIMA = 0.16;
 
     private static final Set<KeyCode> FLECHAS = EnumSet.of(KeyCode.UP, KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT);
 
@@ -113,7 +114,9 @@ final class JugadorController {
             case RIGHT -> disparar(jugador, 1, 0);
             default -> { return; }
         }
-        jugador.iniciarRecargaDisparo(INTERVALO_DISPARO);
+        double intervalo = jugador.getProyectilEquipado() == ProyectilEquipable.LAGRIMA
+                ? INTERVALO_LAGRIMA : INTERVALO_DISPARO;
+        jugador.iniciarRecargaDisparo(intervalo);
     }
 
     private void disparar(Jugador jugador, double dx, double dy) {

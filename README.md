@@ -1,6 +1,10 @@
 DOCUMENTACION
 THE BINDING OF WACHIN
 
+INTEGRANTES
+- Luca Caprio
+- Thiago Llano
+
 Esta documentacion explica como esta organizado el codigo, que responsabilidad tiene cada parte y como se relacionan las clases. El objetivo es entender la implementacion para poder modificarla, mantenerla y explicar sus decisiones tecnicas.
 
 El desarrollo de The Binding of Wachin fue realizado con asistencia de herramientas de inteligencia artificial, pero la planificacion y el diseño de la estructura del proyecto fueron decisiones propias.

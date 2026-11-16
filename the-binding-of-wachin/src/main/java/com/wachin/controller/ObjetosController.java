@@ -26,6 +26,7 @@ final class ObjetosController {
 
     private final ContextoPartida ctx;
     private final InvocacionesController invocaciones;
+    private boolean seleccionCuentaComoRecompensaSala = true;
 
     ObjetosController(ContextoPartida ctx, InvocacionesController invocaciones) {
         this.ctx = ctx;
@@ -135,6 +136,16 @@ final class ObjetosController {
     // ───────────────────────────── cartas ─────────────────────────────
 
     private void mostrarSeleccionCartas() {
+        mostrarSeleccionCartas(true);
+    }
+
+    /** Abre la misma selección de tres cartas al subir de nivel, sin consumir una recompensa de jefe. */
+    void mostrarSeleccionCartasPorNivel() {
+        mostrarSeleccionCartas(false);
+    }
+
+    private void mostrarSeleccionCartas(boolean cuentaComoRecompensaSala) {
+        seleccionCuentaComoRecompensaSala = cuentaComoRecompensaSala;
         ctx.debeAlejarseAntesDeRecoger = true;
         ctx.cartaPendiente = true;
         ctx.pausado = true;
@@ -146,7 +157,10 @@ final class ObjetosController {
     private void completarSeleccionCarta(CartaTipo carta) {
         if (!ctx.cartaPendiente || !ctx.cartas.registrar(carta)) return;
         ctx.mejoras.aplicarCarta(ctx.jugador(), carta);
-        ctx.progresion.marcarRecompensaEntregada(ctx.mapa.getNumeroSala());
+        if (seleccionCuentaComoRecompensaSala) {
+            ctx.progresion.marcarRecompensaEntregada(ctx.mapa.getNumeroSala());
+        }
+        seleccionCuentaComoRecompensaSala = true;
         ctx.cartaPendiente = false;
         ctx.pausado = false;
         ctx.vista.ocultarPantalla();

@@ -75,35 +75,58 @@ public final class JefeService {
         Ataque aviso = Ataque.NINGUNO;
         boolean zonasActivas = false;
 
-        if (jefe.getTipoJefe() == Jefe.Tipo.SALA_10) {
+        if (jefe.getTipoJefe() == Jefe.Tipo.EMISOR_RAYOS) {
             switch (e.fase) {
                 case PERSEGUIR -> {
-                    double[] p = avanzar(x, y, jugadorX, jugadorY, jefe.getVelocidad() * 1.22, dt);
-                    x = p[0]; y = p[1]; e.tiempo -= dt;
+                    double[] p = avanzar(x, y, jugadorX, jugadorY, jefe.getVelocidad() * 1.08, dt);
+                    x = p[0]; y = p[1];
+                    e.tiempo -= dt;
                     if (e.tiempo <= 0) {
+                        Ataque[] ataques = {Ataque.EMBESTIDA, Ataque.DISPARO, Ataque.RADIAL};
+                        int elegido;
+                        do { elegido = random.nextInt(ataques.length); }
+                        while (elegido == e.ultimoAtaque);
+                        e.ultimoAtaque = elegido;
+                        e.ataque = ataques[elegido];
                         e.direccionX = dx; e.direccionY = dy;
-                        e.fase = Fase.PREPARAR; e.tiempo = 0.595; aviso = Ataque.EMBESTIDA;
+                        e.fase = Fase.PREPARAR;
+                        e.tiempo = e.ataque == Ataque.EMBESTIDA ? 0.62 : 0.82;
+                        aviso = e.ataque;
                     }
                 }
                 case PREPARAR -> {
-                    e.tiempo -= dt; aviso = Ataque.EMBESTIDA;
-                    if (e.tiempo <= 0) { e.fase = Fase.EJECUTAR; e.tiempo = 0.562; }
+                    aviso = e.ataque;
+                    e.tiempo -= dt;
+                    if (e.tiempo <= 0) {
+                        e.fase = Fase.EJECUTAR;
+                        ejecutar(jefe, e, x, y, jugadorX, jugadorY, 1.0, disparos, zonas);
+                        e.tiempo = e.ataque == Ataque.EMBESTIDA ? 0.48 : 0.18;
+                    }
                 }
                 case EJECUTAR -> {
-                    x += e.direccionX * 615 * dt; y += e.direccionY * 615 * dt;
+                    if (e.ataque == Ataque.EMBESTIDA) {
+                        x += e.direccionX * 615 * dt;
+                        y += e.direccionY * 615 * dt;
+                    }
                     e.tiempo -= dt;
-                    if (e.tiempo <= 0 || fuera(x, y)) { e.fase = Fase.RECUPERAR; e.tiempo = 0.745; }
+                    if (e.tiempo <= 0 || fuera(x, y)) {
+                        e.fase = Fase.RECUPERAR;
+                        e.tiempo = 0.78;
+                    }
                 }
                 case RECUPERAR -> {
                     e.tiempo -= dt;
-                    if (e.tiempo <= 0) { e.fase = Fase.PERSEGUIR; e.tiempo = 2.76; }
+                    if (e.tiempo <= 0) {
+                        e.fase = Fase.PERSEGUIR;
+                        e.tiempo = 1.55;
+                    }
                 }
             }
             return resultado(x, y, aviso, e.direccionX, e.direccionY, disparos, zonas, false);
         }
 
-        // El Emisor mantiene distancia y se desplaza lateralmente mientras prepara un abanico de rayos.
-        if (jefe.getTipoJefe() == Jefe.Tipo.EMISOR_RAYOS) {
+        // Job mantiene distancia y alterna un ataque laser con una descarga radial.
+        if (jefe.getTipoJefe() == Jefe.Tipo.SALA_10) {
             if (e.fase == Fase.PERSEGUIR) {
                 double lateralX = -dy;
                 double lateralY = dx;
@@ -115,19 +138,24 @@ public final class JefeService {
                 y = Math.max(85, Math.min(615, y));
                 e.tiempo -= dt;
                 if (e.tiempo <= 0) {
-                    e.ataque = Ataque.LASER;
+                    Ataque[] ataquesJob = {Ataque.LASER, Ataque.RADIAL};
+                    int elegido;
+                    do { elegido = random.nextInt(ataquesJob.length); }
+                    while (elegido == e.ultimoAtaque);
+                    e.ultimoAtaque = elegido;
+                    e.ataque = ataquesJob[elegido];
                     e.direccionX = dx;
                     e.direccionY = dy;
                     e.fase = Fase.PREPARAR;
-                    e.tiempo = 1.05;
+                    e.tiempo = e.ataque == Ataque.LASER ? 1.05 : 0.78;
                 }
             } else if (e.fase == Fase.PREPARAR) {
-                aviso = Ataque.LASER;
+                aviso = e.ataque;
                 e.tiempo -= dt;
                 if (e.tiempo <= 0) {
                     e.fase = Fase.EJECUTAR;
                     ejecutar(jefe, e, x, y, jugadorX, jugadorY, 1.0, disparos, zonas);
-                    e.tiempo = 0.22;
+                    e.tiempo = e.ataque == Ataque.LASER ? 0.22 : 0.18;
                 }
             } else if (e.fase == Fase.EJECUTAR) {
                 e.tiempo -= dt;
@@ -145,7 +173,7 @@ public final class JefeService {
             return resultado(x, y, aviso, e.direccionX, e.direccionY, disparos, zonas, false);
         }
 
-        // Los jefes 15 y 20 se aproximan entre ataques y conservan ventana de recuperación.
+        // Palinni y el jefe de sala 20 se aproximan entre ataques y conservan ventana de recuperación.
         if (e.fase == Fase.PERSEGUIR) {
             double velocidad = jefe.getVelocidad() * faseRapida;
             if (jefe.getTipoJefe() == Jefe.Tipo.SALA_15 && distancia < 245) {
@@ -213,7 +241,8 @@ public final class JefeService {
         switch (e.ataque) {
             case DISPARO -> {
                 double d = Math.max(1, Math.hypot(jugadorX - x, jugadorY - y));
-                int cantidad = jefe.getTipoJefe() == Jefe.Tipo.SALA_20 && e.segundaFase ? 5 : 3;
+                int cantidad = jefe.getTipoJefe() == Jefe.Tipo.SALA_20 && e.segundaFase ? 5
+                        : jefe.getTipoJefe() == Jefe.Tipo.SALA_10 ? 5 : 3;
                 for (int i = 0; i < cantidad; i++) {
                     double angulo = Math.atan2(jugadorY - y, jugadorX - x) + (i - (cantidad - 1) / 2.0) * 0.13;
                     disparos.add(new Disparo(x, y, Math.cos(angulo) * 270 * rapidez,
@@ -221,7 +250,8 @@ public final class JefeService {
                 }
             }
             case RADIAL -> {
-                int cantidad = jefe.getTipoJefe() == Jefe.Tipo.SALA_20 && e.segundaFase ? 16 : 12;
+                int cantidad = jefe.getTipoJefe() == Jefe.Tipo.SALA_20 && e.segundaFase ? 16
+                        : jefe.getTipoJefe() == Jefe.Tipo.SALA_10 ? 14 : 12;
                 for (int i = 0; i < cantidad; i++) {
                     double a = Math.PI * 2 * i / cantidad;
                     disparos.add(new Disparo(x, y, Math.cos(a) * 230 * rapidez,

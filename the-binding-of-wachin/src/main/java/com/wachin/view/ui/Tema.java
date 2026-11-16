@@ -15,9 +15,9 @@ import javafx.scene.text.Text;
 /** Paleta, tipografías y utilidades de estilo compartidas por toda la interfaz. */
 public final class Tema {
 
-    public static final Color FONDO = Color.web("#0b0a10");
-    public static final Color PANEL = Color.web("#1b1826");
-    public static final Color BORDE = Color.web("#3a3150");
+    public static final Color FONDO = Color.web("#15131c");
+    public static final Color PANEL = Color.web("#242130");
+    public static final Color BORDE = Color.web("#49415d");
     public static final Color ROJO = Color.web("#c0283a");
     public static final Color ROJO_VIVO = Color.web("#ff4560");
     public static final Color ROJO_OSCURO = Color.web("#5a0f1c");

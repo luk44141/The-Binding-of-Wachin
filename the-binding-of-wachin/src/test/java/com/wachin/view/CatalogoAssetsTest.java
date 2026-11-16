@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.wachin.model.TipoObjetoSuelo;
+import com.wachin.model.Jefe;
 import com.wachin.view.game.CatalogoAssets;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -39,12 +40,23 @@ public class CatalogoAssetsTest {
     @Test
     public void losSpritesExistentesEstanEnLasRutasQueElCodigoEspera() {
         List<String> existentes = List.of("player/wachin.png", "player/wachina.png", "enemies/poli.png",
-                "bosses/palinni.png", "bosses/emisor_rayos.png", "projectiles/gota.png", "projectiles/lagrima.png",
+                "bosses/palinni.png", "bosses/emisor_rayos.png", "bosses/job.png",
+                "bosses/demonboss.png", "projectiles/gota.png", "projectiles/lagrima.png",
                 "environment/floors/floor.png", "environment/floors/floor_alt.png", "environment/walls/wall.png",
                 "environment/doors/closed.png");
         for (String ruta : existentes) {
             assertNotNull("No se encuentra el recurso " + ruta,
                     CatalogoAssetsTest.class.getResource("/" + CatalogoAssets.RAIZ + ruta));
+        }
+    }
+
+
+    @Test
+    public void todosLosTiposDeJefeTienenUnSpriteExistente() {
+        for (Jefe.Tipo tipo : Jefe.Tipo.values()) {
+            String ruta = CatalogoAssets.jefe(tipo).get(0);
+            assertNotNull("Falta el sprite del jefe " + tipo,
+                    CatalogoAssetsTest.class.getResource("/" + ruta));
         }
     }
 

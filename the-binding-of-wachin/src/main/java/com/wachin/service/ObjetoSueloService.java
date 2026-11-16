@@ -17,6 +17,8 @@ public final class ObjetoSueloService {
     private static final double PROBABILIDAD_CARTA_UNICA = 0.002;
     /** Probabilidad de que cualquier jefe suelte una invocación. */
     public static final double PROBABILIDAD_INVOCACION_JEFE = 0.75;
+    /** Palinni siempre entrega una invocacion al ser derrotado en la sala 5. */
+    public static final double PROBABILIDAD_INVOCACION_PALINNI = 1.0;
     private final Map<Long, ObjetoSuelo> objetos = new LinkedHashMap<>();
     private final Random random;
 
@@ -75,14 +77,21 @@ public final class ObjetoSueloService {
     }
 
 
-    /** Todos los jefes sueltan una invocación con una probabilidad del 75%. */
+    /** Palinni (sala 5) siempre suelta una invocacion; los demas jefes tienen 75% de probabilidad. */
     public Optional<ObjetoSuelo> crearDropInvocacionJefe(int sala, double x, double y,
             List<TipoInvocacion> invocacionesPermitidas) {
-        if (random.nextDouble() >= PROBABILIDAD_INVOCACION_JEFE
-                || invocacionesPermitidas == null || invocacionesPermitidas.isEmpty()) {
+        if (sala != 5 && random.nextDouble() >= PROBABILIDAD_INVOCACION_JEFE) {
             return Optional.empty();
         }
-        TipoInvocacion tipo = invocacionesPermitidas.get(random.nextInt(invocacionesPermitidas.size()));
+
+        // Palinni siempre entrega una invocacion. Si ya no quedan tipos libres, permite repetir una.
+        List<TipoInvocacion> disponibles = invocacionesPermitidas;
+        if ((disponibles == null || disponibles.isEmpty()) && sala == 5) {
+            disponibles = List.of(TipoInvocacion.values());
+        }
+        if (disponibles == null || disponibles.isEmpty()) return Optional.empty();
+
+        TipoInvocacion tipo = disponibles.get(random.nextInt(disponibles.size()));
         return Optional.of(crear(TipoObjetoSuelo.INVOCACION, tipo.name(), sala, x, y));
     }
 

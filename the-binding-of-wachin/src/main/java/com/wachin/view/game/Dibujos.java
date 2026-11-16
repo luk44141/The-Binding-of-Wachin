@@ -348,7 +348,7 @@ public final class Dibujos {
     public static Image iconoCarta(String codigo) {
         return renderizar(96, 96, g -> {
             switch (codigo) {
-                case "DANO" -> {
+                case "DANO", "FUERZA" -> {
                     resplandor(g, 48, 48, 44, c("#ff4560"), 0.45);
                     g.setStroke(NEGRO); g.setLineWidth(15); g.strokeLine(20, 76, 70, 18);
                     g.setStroke(c("#e8edf5")); g.setLineWidth(8); g.strokeLine(20, 76, 70, 18);

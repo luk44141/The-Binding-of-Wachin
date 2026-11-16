@@ -12,16 +12,17 @@ import javafx.scene.shape.Rectangle;
 /** Representación de una invocación con barras de vida y energía y un escudo cuando protege. */
 public final class InvocacionVisual {
 
-    private static final double TAMANO = 46;
+    private static final double TAMANO = 64;
     private final Invocacion invocacion;
     private final Group nodo = new Group();
     private final Group cuerpo = new Group();
     private final Circle escudo = new Circle(TAMANO * 0.62);
-    private final Rectangle fondoVida = new Rectangle(-22, -TAMANO / 2 - 12, 44, 5);
-    private final Rectangle barraVida = new Rectangle(-22, -TAMANO / 2 - 12, 44, 5);
-    private final Rectangle fondoEnergia = new Rectangle(-22, -TAMANO / 2 - 6, 44, 4);
-    private final Rectangle barraEnergia = new Rectangle(-22, -TAMANO / 2 - 6, 44, 4);
+    private final Rectangle fondoVida = new Rectangle(-TAMANO * 0.48, -TAMANO / 2 - 13, TAMANO * 0.96, 6);
+    private final Rectangle barraVida = new Rectangle(-TAMANO * 0.48, -TAMANO / 2 - 13, TAMANO * 0.96, 6);
+    private final Rectangle fondoEnergia = new Rectangle(-TAMANO * 0.48, -TAMANO / 2 - 6, TAMANO * 0.96, 4);
+    private final Rectangle barraEnergia = new Rectangle(-TAMANO * 0.48, -TAMANO / 2 - 6, TAMANO * 0.96, 4);
     private final boolean vuela;
+    private final double escala;
     private double tiempo;
     private double xPrevia;
     private double mirada = 1;
@@ -30,6 +31,7 @@ public final class InvocacionVisual {
         if (invocacion == null) throw new IllegalArgumentException("Invocación obligatoria.");
         this.invocacion = invocacion;
         this.vuela = invocacion.getTipoInvocacion() == com.wachin.model.TipoInvocacion.MURCIELAGO;
+        this.escala = invocacion.getTipoInvocacion() == com.wachin.model.TipoInvocacion.GUSANO ? 1.5 : 1.0;
         Image imagen = AssetVisual.imagen(CatalogoAssets.invocacion(invocacion.getTipoInvocacion()),
                 "invocacion_" + invocacion.getTipoInvocacion(), () -> Dibujos.invocacion(invocacion.getTipoInvocacion()));
         ImageView sprite = AssetVisual.vista(imagen, TAMANO, TAMANO);
@@ -60,7 +62,8 @@ public final class InvocacionVisual {
         if (Math.abs(x - xPrevia) > 0.15) mirada = Math.signum(x - xPrevia);
         xPrevia = x;
         double vuelo = vuela ? Math.sin(tiempo * 7) * 5 - 8 : Math.abs(Math.sin(tiempo * 6)) * -3;
-        cuerpo.setScaleX(mirada);
+        cuerpo.setScaleX(mirada * escala);
+        cuerpo.setScaleY(escala);
         cuerpo.setTranslateY(vuelo);
         cuerpo.setRotate(Math.sin(tiempo * 6) * 4);
         boolean protege = invocacion.tieneProteccionActiva();
@@ -68,8 +71,8 @@ public final class InvocacionVisual {
         if (protege) escudo.setOpacity(0.65 + 0.35 * Math.sin(tiempo * 10));
         AssetVisual.moverAlCentro(nodo, x, y);
         nodo.setViewOrder(-y);
-        barraVida.setWidth(44.0 * Math.max(0, invocacion.getVida()) / invocacion.getVidaMaxima());
-        barraEnergia.setWidth(44.0 * invocacion.getEnergia() / invocacion.getEnergiaMaxima());
+        barraVida.setWidth(TAMANO * 0.96 * Math.max(0, invocacion.getVida()) / invocacion.getVidaMaxima());
+        barraEnergia.setWidth(TAMANO * 0.96 * invocacion.getEnergia() / invocacion.getEnergiaMaxima());
     }
 
     public Invocacion getInvocacion() { return invocacion; }

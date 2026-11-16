@@ -21,6 +21,7 @@ public class Invocacion extends Entidad {
     private double x;
     private double y;
     private double tiempoAtaque;
+    private double recargaBloqueoProyectil;
     private Estado estado = Estado.SIGUIENDO;
     private boolean proteccionActiva;
     private int espacio;
@@ -102,6 +103,17 @@ public class Invocacion extends Entidad {
     public void setEspacio(int espacio) { this.espacio = espacio <= 0 ? 0 : 1; }
     public Estado getEstado() { return estado; }
     public boolean tieneProteccionActiva() { return proteccionActiva; }
+    /** Solo el gusano puede interceptar proyectiles y necesita esperar tres segundos entre bloqueos. */
+    public boolean puedeBloquearProyectil() {
+        return tipoInvocacion == TipoInvocacion.GUSANO && recargaBloqueoProyectil <= 0;
+    }
+    public void bloquearProyectil() {
+        if (puedeBloquearProyectil()) recargaBloqueoProyectil = 3.0;
+    }
+    public double getRecargaBloqueoProyectil() { return recargaBloqueoProyectil; }
+    public void reducirRecargaBloqueoProyectil(double dt) {
+        if (dt > 0 && Double.isFinite(dt)) recargaBloqueoProyectil = Math.max(0, recargaBloqueoProyectil - dt);
+    }
     public void moverA(double x, double y) { this.x = x; this.y = y; }
     public void setEstado(Estado estado) { this.estado = estado == null ? Estado.SIGUIENDO : estado; }
     public void setProteccionActiva(boolean activa) { proteccionActiva = activa; }
@@ -130,6 +142,12 @@ public class Invocacion extends Entidad {
         this.estado = estado == null ? Estado.SIGUIENDO : estado;
         this.proteccionActiva = proteccionActiva;
     }
+    /** Las invocaciones son compañeras permanentes: el daño recibido no reduce su vida. */
+    @Override
+    public void recibirDano(int dano) {
+        // Se conserva la vida completa; los proyectiles hostiles igualmente impactan y desaparecen.
+    }
+
     @Override public void atacar(Entidad objetivo) {
         if (objetivo != null) objetivo.recibirDano(getDano());
     }

@@ -73,10 +73,10 @@ public final class CatalogoAssets {
 
     public static List<String> jefe(Jefe.Tipo tipo) {
         return List.of(switch (tipo) {
-            case SALA_10 -> RAIZ + "bosses/palinni.png";
+            case SALA_10 -> RAIZ + "bosses/job.png";
             case EMISOR_RAYOS -> RAIZ + "bosses/emisor_rayos.png";
-            case SALA_15 -> RAIZ + "bosses/boss_2/boss.png";
-            case SALA_20 -> RAIZ + "bosses/boss_3/boss.png";
+            case SALA_15 -> RAIZ + "bosses/palinni.png";
+            case SALA_20 -> RAIZ + "bosses/demonboss.png";
         });
     }
 

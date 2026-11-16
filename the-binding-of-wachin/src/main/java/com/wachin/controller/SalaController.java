@@ -140,11 +140,18 @@ final class SalaController {
         int sala = ctx.mapa.getNumeroSala();
         boolean limpia = ctx.enemigos.isEmpty();
         Resultado resultado = Resultado.NINGUNO;
-        if (limpia && sala % 2 == 0 && !ctx.progresion.cartaGenerada(sala)) {
-            ctx.progresion.marcarCartaGenerada(sala);
-            objetos.aparecerCartaDeSala(sala);
-        }
         if (limpia && !ctx.puertasAbiertas) {
+            if (ctx.progresion.marcarExperienciaEntregada(sala)) {
+                int niveles = ctx.jugadorServicio.ganarExperiencia(ctx.jugador(), 50);
+                if (niveles > 0) {
+                    ctx.efectos.nivelSubido(ctx.x, ctx.y, ctx.jugador().getNivel());
+                    ctx.vista.mostrarAviso("¡Nivel " + ctx.jugador().getNivel()
+                            + "! Vida completa y vida máxima +10", Tono.ESPECIAL);
+                    objetos.mostrarSeleccionCartasPorNivel();
+                } else {
+                    ctx.vista.mostrarAviso("+50 EXP", Tono.BUENO);
+                }
+            }
             ctx.puertasAbiertas = true;
             ctx.vista.configurarSalidas(nodo.getDireccionesSalida(), nodo.getDireccionEntrada(), true);
             ctx.efectos.puertasAbiertas();

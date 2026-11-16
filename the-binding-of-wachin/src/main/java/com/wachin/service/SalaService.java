@@ -64,7 +64,7 @@ public class SalaService {
      */
     public Jefe generarJefe(int identificador, int mapa) {
         int nivel = Math.max(1, mapa);
-        int vida = 1500 + (nivel - 1) * 250;
+        int vida = 2000 + (nivel - 1) * 250;
         int dano = 18 + (nivel - 1) * 8;
         double velocidad = Math.min(105 + (nivel - 1) * 13.0, 235);
         try {
@@ -85,10 +85,10 @@ public class SalaService {
         String especial;
         int extra;
         switch (tipo) {
-            case SALA_10 -> { vida = 1500; dano = 18; velocidad = 105; nombre = "Guardián"; especial = "EMBESTIDA"; extra = 19; }
-            case EMISOR_RAYOS -> { vida = 1900; dano = 22; velocidad = 92; nombre = "Emisor de rayos"; especial = "RAYO_GIRATORIO"; extra = 22; }
-            case SALA_15 -> { vida = 2600; dano = 24; velocidad = 82; nombre = "Artillero"; especial = "RAFAGA_RADIAL_EMBESTIDA"; extra = 24; }
-            case SALA_20 -> { vida = 4600; dano = 32; velocidad = 135; nombre = "Palinni, el Incesante"; especial = "DOS_FASES_ZONAS_DE_IMPACTO"; extra = 32; }
+            case SALA_10 -> { vida = 2400; dano = 22; velocidad = 92; nombre = "Job"; especial = "RAYO_Y_DESCARGA_RADIAL"; extra = 22; }
+            case EMISOR_RAYOS -> { vida = 3100; dano = 24; velocidad = 105; nombre = "Emisor de rayos"; especial = "RAFAGA_RADIAL_EMBESTIDA"; extra = 24; }
+            case SALA_15 -> { vida = 2000; dano = 18; velocidad = 82; nombre = "Palinni"; especial = "ATAQUE_DE_JEFE_INICIAL"; extra = 19; }
+            case SALA_20 -> { vida = 5100; dano = 32; velocidad = 135; nombre = "Demonio, el Incesante"; especial = "DOS_FASES_ZONAS_DE_IMPACTO"; extra = 32; }
             default -> throw new IllegalArgumentException("Tipo de jefe desconocido.");
         }
         try {

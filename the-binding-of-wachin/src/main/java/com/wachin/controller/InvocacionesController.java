@@ -54,11 +54,11 @@ final class InvocacionesController {
         List<Invocacion> activas = ctx.juego.getInvocacionesActivas();
         for (int i = 0; i < activas.size(); i++) activas.get(i).setEspacio(i);
         for (Invocacion invocacion : new ArrayList<>(activas)) {
+            invocacion.reducirRecargaBloqueoProyectil(dt);
+            // Respaldo para partidas guardadas antiguas: ninguna invocación puede quedar muerta.
             if (invocacion.getVida() <= 0) {
-                ctx.vista.efectos().explosion(invocacion.getX(), invocacion.getY(), Retroalimentacion.CIAN, 0.8);
-                ctx.juego.eliminarInvocacion(invocacion);
-                quitarVisual(invocacion);
-                continue;
+                try { invocacion.curar(invocacion.getVidaMaxima()); }
+                catch (com.wachin.exception.VidaMaximaException ignorada) { /* El máximo ya limita la curación. */ }
             }
             InvocacionService.Actualizacion accion = ctx.invocacionServicio.actualizar(invocacion, ctx.jugador(),
                     ctx.x, ctx.y, objetivos, dt);

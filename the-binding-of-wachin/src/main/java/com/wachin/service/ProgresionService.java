@@ -30,6 +30,10 @@ public final class ProgresionService {
     public boolean cartaGenerada(int sala) {
         return sala > 0 && recompensasEntregadas.contains(-sala);
     }
+    /** Evita entregar dos veces la experiencia por limpiar la misma sala. */
+    public boolean marcarExperienciaEntregada(int sala) {
+        return sala > 0 && recompensasEntregadas.add(-(sala + 1_000_000));
+    }
     public Set<Integer> getRecompensasEntregadas() { return Set.copyOf(recompensasEntregadas); }
     public void restaurarRecompensasEntregadas(Set<Integer> salas) {
         recompensasEntregadas.clear();
@@ -38,9 +42,9 @@ public final class ProgresionService {
 
     public static Jefe.Tipo jefeDeSala(int numeroGlobal) {
         return switch (numeroGlobal) {
-            case 5 -> Jefe.Tipo.SALA_10; // Conserva el jefe original de la sala 5.
-            case 10 -> Jefe.Tipo.EMISOR_RAYOS;
-            case 15 -> Jefe.Tipo.SALA_15;
+            case 5 -> Jefe.Tipo.SALA_15; // Palinni es el primer jefe y aparece en la sala 5.
+            case 10 -> Jefe.Tipo.SALA_10; // Job aparece en la sala 10.
+            case 15 -> Jefe.Tipo.EMISOR_RAYOS; // El Emisor de Rayos aparece en la sala 15.
             case 20 -> Jefe.Tipo.SALA_20;
             default -> jefeRepetido(numeroGlobal);
         };

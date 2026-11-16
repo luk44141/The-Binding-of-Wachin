@@ -25,15 +25,16 @@ public class JugadorService {
                 throw new IllegalStateException("La experiencia cambió durante el ascenso de nivel.", e);
             }
             jugador.aumentarVidaMaxima(10);
+            jugador.restaurarVidaCompleta();
             nivelesGanados++;
         }
         return nivelesGanados;
     }
 
-    /** Nivel 1 requiere 100 XP; cada nivel siguiente agrega 10 XP al requisito. */
+    /** Cada nivel requiere 100 XP: con 50 XP por sala se sube un nivel cada dos salas. */
     public int experienciaNecesaria(int nivelActual) {
         if (nivelActual < 1) throw new IllegalArgumentException("El nivel debe ser positivo.");
-        return Math.addExact(100, Math.multiplyExact(nivelActual - 1, 10));
+        return 100;
     }
 
     /**

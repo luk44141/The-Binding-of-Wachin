@@ -33,6 +33,25 @@ public class CartaServiceTest {
         assertTrue(jugador.tieneSegundoEspacioInvocacion());
     }
 
+
+    @Test
+    public void cartaDanoAumentaCincoElDanoDeProyectiles() throws Exception {
+        Jugador jugador = new Jugador("Wachin", 100, 25, 100);
+        MejorasService mejoras = new MejorasService();
+        mejoras.aplicarCarta(jugador, CartaTipo.DANO);
+        assertEquals(30, mejoras.calcularDanoProyectil(jugador, 25));
+        assertEquals(5, CartaTipo.DANO.getValor());
+    }
+
+    @Test
+    public void fuerzaAumentaCincoElDanoDeProyectilesEInvocaciones() throws Exception {
+        Jugador jugador = new Jugador("Wachin", 100, 25, 100);
+        MejorasService mejoras = new MejorasService();
+        mejoras.aplicarCarta(jugador, CartaTipo.FUERZA);
+        assertEquals(30, mejoras.calcularDanoProyectil(jugador, 25));
+        assertEquals(23, mejoras.calcularDanoInvocacion(jugador, 18));
+    }
+
     @Test
     public void efectosDeVelocidadYVidaMaximaModificanElModelo() throws Exception {
         Jugador jugador = new Jugador("Wachin", 100, 25, 100);

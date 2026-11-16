@@ -21,9 +21,13 @@ public class JefesInvocacionesDropTest {
     }
 
     @Test
-    public void todosLosJefesSueltanInvocacionConProbabilidadDel75PorCiento() {
+    public void palinniEnSala5SiempreEntregaInvocacionYLosDemasTienen75PorCiento() {
+        assertEquals(1.0, ObjetoSueloService.PROBABILIDAD_INVOCACION_PALINNI, 0.0);
         assertEquals(0.75, ObjetoSueloService.PROBABILIDAD_INVOCACION_JEFE, 0.0);
-        for (int sala : new int[]{5, 10, 15, 20}) {
+        var dropPalinni = new ObjetoSueloService(new Tirada(0.99))
+                .crearDropInvocacionJefe(5, 10, 10, List.of(TipoInvocacion.values()));
+        assertTrue(dropPalinni.isPresent());
+        for (int sala : new int[]{10, 15, 20}) {
             var servicio = new ObjetoSueloService(new Tirada(0.74));
             var drop = servicio.crearDropInvocacionJefe(sala, 10, 10, List.of(TipoInvocacion.values()));
             assertTrue("sala " + sala, drop.isPresent());
@@ -34,12 +38,20 @@ public class JefesInvocacionesDropTest {
     @Test
     public void unaTiradaPorEncimaDelUmbralNoSueltaNada() {
         var servicio = new ObjetoSueloService(new Tirada(0.76));
-        assertFalse(servicio.crearDropInvocacionJefe(5, 10, 10, List.of(TipoInvocacion.values())).isPresent());
+        assertFalse(servicio.crearDropInvocacionJefe(10, 10, 10, List.of(TipoInvocacion.values())).isPresent());
     }
 
     @Test
-    public void sinInvocacionesPermitidasNoSeCreaElObjeto() {
+    public void palinniTambienEntregaInvocacionSiNoQuedanTiposLibres() {
         var servicio = new ObjetoSueloService(new Tirada(0.0));
-        assertFalse(servicio.crearDropInvocacionJefe(5, 10, 10, List.of()).isPresent());
+        var drop = servicio.crearDropInvocacionJefe(5, 10, 10, List.of());
+        assertTrue(drop.isPresent());
+        assertEquals(TipoObjetoSuelo.INVOCACION, drop.get().getTipo());
+    }
+
+    @Test
+    public void losDemasJefesNoCreanInvocacionSiNoHayTiposDisponibles() {
+        var servicio = new ObjetoSueloService(new Tirada(0.0));
+        assertFalse(servicio.crearDropInvocacionJefe(10, 10, 10, List.of()).isPresent());
     }
 }

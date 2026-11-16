@@ -18,9 +18,9 @@ import static org.junit.Assert.assertTrue;
 public class ProgresionServiceTest {
     @Test
     public void jefesSeDeterminanPorSalaGlobal() {
-        assertEquals(Jefe.Tipo.SALA_10, ProgresionService.jefeDeSala(5));
-        assertEquals(Jefe.Tipo.EMISOR_RAYOS, ProgresionService.jefeDeSala(10));
-        assertEquals(Jefe.Tipo.SALA_15, ProgresionService.jefeDeSala(15));
+        assertEquals(Jefe.Tipo.SALA_15, ProgresionService.jefeDeSala(5));
+        assertEquals(Jefe.Tipo.SALA_10, ProgresionService.jefeDeSala(10));
+        assertEquals(Jefe.Tipo.EMISOR_RAYOS, ProgresionService.jefeDeSala(15));
         assertEquals(Jefe.Tipo.SALA_20, ProgresionService.jefeDeSala(20));
         assertNull(ProgresionService.recompensaDeSala(5));
     }

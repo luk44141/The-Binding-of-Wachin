@@ -97,9 +97,11 @@ final class CombateController {
     private boolean impactarInvocacion(ProyectilVisual visual) {
         Proyectil proyectil = visual.getModelo();
         for (Invocacion invocacion : ctx.juego.getInvocacionesActivas()) {
+            // Murcielago y Robot no bloquean: los proyectiles enemigos los atraviesan.
+            if (!invocacion.puedeBloquearProyectil()) continue;
             if (ctx.colision.colisionaProyectilCirculo(proyectil, invocacion.getX(), invocacion.getY(),
                     invocacion.getX(), invocacion.getY(), RADIO_PROYECTIL_JUGADOR_CONTRA_INVOCACION)) {
-                invocacion.recibirDano(proyectil.getDano());
+                invocacion.bloquearProyectil();
                 ctx.vista.efectos().impacto(invocacion.getX(), invocacion.getY(), visual.getColor());
                 return true;
             }

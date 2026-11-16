@@ -39,9 +39,9 @@ public final class BarraRecurso extends Pane {
         Rectangle fondo = new Rectangle(ancho, alto);
         fondo.setArcWidth(arco);
         fondo.setArcHeight(arco);
-        fondo.setFill(Color.web("#0d0b14"));
+        fondo.setFill(Color.web("#171717"));
         estela = new Rectangle(ancho, alto);
-        estela.setFill(Color.web("#f4e9d0", 0.85));
+        estela.setFill(Color.web("#b0b0b0", 0.75));
         relleno = new Rectangle(ancho, alto);
         relleno.setFill(new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE,
                 new Stop(0, claro), new Stop(1, oscuro)));
@@ -59,7 +59,7 @@ public final class BarraRecurso extends Pane {
         borde.setArcWidth(arco);
         borde.setArcHeight(arco);
         borde.setFill(Color.TRANSPARENT);
-        borde.setStroke(Color.web("#050409"));
+        borde.setStroke(Color.web("#080808"));
         borde.setStrokeWidth(2);
         getChildren().addAll(fondo, contenido, borde);
         dibujar();

@@ -95,7 +95,8 @@ public class JuegoService {
     public int derrotarEnemigo(Enemigo enemigo, JugadorService jugadorService) {
         if (enemigo == null || jugador == null || enemigo.getVida() > 0) return 0;
         eliminarEnemigo(enemigo);
-        return jugadorService.ganarExperiencia(jugador, enemigo instanceof Jefe ? 150 : 25);
+        // La experiencia se entrega al completar la sala, no por cada enemigo derrotado.
+        return 0;
     }
 
 }

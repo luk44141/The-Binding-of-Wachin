@@ -8,7 +8,7 @@
 .root-wachin {
     -fx-font-family: "Segoe UI", "Helvetica Neue", "Noto Sans", "DejaVu Sans", Arial, sans-serif;
     -fx-font-size: 15px;
-    -fx-background-color: #0b0a10;
+    -fx-background-color: #15131c;
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
 }
@@ -85,9 +85,9 @@
 
 /* ---------- Paneles ---------- */
 .panel-modal {
-    -fx-background-color: linear-gradient(to bottom, #221d31 0%, #15121f 100%);
+    -fx-background-color: linear-gradient(to bottom, #2a2637 0%, #1d1a28 100%);
     -fx-background-radius: 16;
-    -fx-border-color: linear-gradient(to bottom, #6a5a8f 0%, #3a3150 55%, #2a2340 100%);
+    -fx-border-color: linear-gradient(to bottom, #6a5a8f 0%, #49415d 55%, #2a2340 100%);
     -fx-border-width: 2;
     -fx-border-radius: 16;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.85), 40, 0.25, 0, 14);

@@ -9,6 +9,10 @@ public final class MejorasService {
         if (jugador == null || carta == null) throw new IllegalArgumentException("Jugador y carta son obligatorios.");
         switch (carta) {
             case DANO -> jugador.aumentarBonoDanoProyectiles(carta.getValor());
+            case FUERZA -> {
+                jugador.aumentarBonoDanoProyectiles(carta.getValor());
+                jugador.aumentarBonoDanoInvocaciones(carta.getValor());
+            }
             case VELOCIDAD -> jugador.aumentarVelocidad(carta.getValor());
             case VIDA_MAXIMA -> jugador.aumentarVidaMaxima(carta.getValor());
             case DANO_INVOCACIONES -> jugador.aumentarBonoDanoInvocaciones(carta.getValor());

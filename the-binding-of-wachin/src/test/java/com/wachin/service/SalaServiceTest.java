@@ -9,6 +9,15 @@ import static org.junit.Assert.assertTrue;
 
 public class SalaServiceTest {
     @Test
+    public void todosLosJefesTienenQuinientosPuntosDeVidaAdicionales() {
+        SalaService servicio = new SalaService();
+        assertEquals(2400, servicio.generarJefe(com.wachin.model.Jefe.Tipo.SALA_10).getVidaMaxima());
+        assertEquals(3100, servicio.generarJefe(com.wachin.model.Jefe.Tipo.EMISOR_RAYOS).getVidaMaxima());
+        assertEquals(2000, servicio.generarJefe(com.wachin.model.Jefe.Tipo.SALA_15).getVidaMaxima());
+        assertEquals(5100, servicio.generarJefe(com.wachin.model.Jefe.Tipo.SALA_20).getVidaMaxima());
+    }
+
+    @Test
     public void dificultadUsaLaUbicacionGlobalYLosNormalesIncluyenAlTirador() {
         SalaService salas = new SalaService();
         for (int global = 1; global <= 20; global++) {

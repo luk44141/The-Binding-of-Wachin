@@ -17,6 +17,7 @@ import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Rotate;
 
 /**
  * Representación de un enemigo o jefe: sprite con animación de marcha, sombra, barra de vida,
@@ -59,7 +60,10 @@ public class EnemigoVisual {
         this.esJefe = enemigo instanceof Jefe;
         boolean cornudo = enemigo instanceof Jefe j && j.getTipoJefe() == Jefe.Tipo.SALA_20;
         this.radioColision = esJefe ? (cornudo ? 42 : 34) : 22;
-        this.tamanoVisual = esJefe ? (cornudo ? 138 : 112) : 68;
+        this.tamanoVisual = esJefe
+                ? (cornudo ? 138 : ((Jefe) enemigo).getTipoJefe() == Jefe.Tipo.SALA_10
+                        || ((Jefe) enemigo).getTipoJefe() == Jefe.Tipo.SALA_15 ? 148 : 112)
+                : 68;
 
         Image imagen = esJefe ? imagenJefe((Jefe) enemigo) : imagenNormal(enemigo);
         sprite = AssetVisual.vista(imagen, tamanoVisual, tamanoVisual);
@@ -88,9 +92,9 @@ public class EnemigoVisual {
 
     private static Image imagenJefe(Jefe j) {
         return AssetVisual.imagen(CatalogoAssets.jefe(j.getTipoJefe()), "jefe_" + j.getTipoJefe(), () -> switch (j.getTipoJefe()) {
-            case SALA_10 -> Dibujos.jefePalinni();
+            case SALA_10 -> Dibujos.jefeArtillero();
             case EMISOR_RAYOS -> Dibujos.jefeEmisor();
-            case SALA_15 -> Dibujos.jefeArtillero();
+            case SALA_15 -> Dibujos.jefePalinni();
             case SALA_20 -> Dibujos.jefeCornudo();
         });
     }
@@ -223,7 +227,8 @@ public class EnemigoVisual {
                     new Stop(1, Color.color(color.getRed(), color.getGreen(), color.getBlue(), 0))));
             carril.setHeight(ataque == JefeService.Ataque.LASER ? 18 : radioColision * 1.5);
             carril.setY(-carril.getHeight() / 2);
-            lanzador.setRotate(Math.toDegrees(Math.atan2(dy, dx)));
+            double angulo = Math.toDegrees(Math.atan2(dy, dx));
+            lanzador.getTransforms().setAll(new Rotate(angulo, 0, 0));
         }
         for (int i = 0; i < zonas.size(); i++) {
             Circle circulo = zonas.get(i);

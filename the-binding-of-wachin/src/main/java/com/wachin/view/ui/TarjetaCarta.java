@@ -67,7 +67,8 @@ public final class TarjetaCarta {
 
     public static String textoValor(CartaTipo tipo) {
         return switch (tipo) {
-            case DANO -> "+" + tipo.getValor() + " daño";
+            case DANO -> "+" + tipo.getValor() + " daño de proyectiles";
+            case FUERZA -> "+" + tipo.getValor() + " daño para proyectiles e invocaciones";
             case VELOCIDAD -> "+" + tipo.getValor() + " velocidad";
             case VIDA_MAXIMA -> "+" + tipo.getValor() + " vida máxima";
             case DANO_INVOCACIONES -> "+" + tipo.getValor() + " daño de invocaciones";

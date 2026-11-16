@@ -50,16 +50,23 @@ public final class InvocacionService {
         double destinoX = jugadorX + (invocacion.getEspacio() == 0 ? -52 : 52);
         double destinoY = jugadorY + 42;
         boolean proteger = false;
-        if (tipo == TipoInvocacion.GUSANO && objetivo != null
-                && distancia(jugadorX, jugadorY, objetivo.x(), objetivo.y()) < 210) {
+        if (tipo == TipoInvocacion.GUSANO && objetivo != null) {
             double dx = objetivo.x() - jugadorX;
             double dy = objetivo.y() - jugadorY;
             double d = Math.max(1, Math.hypot(dx, dy));
-            destinoX = jugadorX + dx / d * 62;
-            destinoY = jugadorY + dy / d * 62;
-            proteger = true;
+            if (d < 125) {
+                // Se interpone entre el jugador y un enemigo cercano y activa su protección.
+                destinoX = jugadorX + dx / d * 70;
+                destinoY = jugadorY + dy / d * 70;
+                proteger = true;
+            } else {
+                // Si el enemigo está lejos del jugador, el gusano también sale a atacarlo.
+                destinoX = objetivo.x() - dx / d * 34;
+                destinoY = objetivo.y() - dy / d * 34;
+            }
         } else if (tipo == TipoInvocacion.MURCIELAGO && objetivo != null) {
-            destinoX = objetivo.x(); destinoY = objetivo.y();
+            destinoX = objetivo.x();
+            destinoY = objetivo.y();
         }
         mover(invocacion, destinoX, destinoY, dt);
 

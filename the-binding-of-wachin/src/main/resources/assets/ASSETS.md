@@ -32,9 +32,9 @@ Convenciones para el arte nuevo:
 | `enemies/poli.png` | incluido | 68×68 | policía azul dibujado |
 | `enemies/ranged/tirador.png` | falta | 68×68 | guardia con pistola dibujado |
 | `bosses/palinni.png` | incluido (jefe de la sala 5) | 112×112 | dibujado |
-| `bosses/emisor_rayos.png` | incluido (jefe de la sala 10) | 112×112 | dibujado |
-| `bosses/boss_2/boss.png` | falta (jefe de la sala 15) | 112×112 | golem artillero dibujado |
-| `bosses/boss_3/boss.png` | falta (jefe de la sala 20 y de cada 20 salas) | 138×138 | demonio con cuernos dibujado |
+| `bosses/emisor_rayos.png` | incluido (jefe de la sala 15) | 112×112 | emisor de rayos |
+| `bosses/job.png` | incluido (jefe de la sala 10) | 112×112 | sprite artillero |
+| `bosses/demonboss.png` | incluido (jefe de la sala 20 y de cada 20 salas) | 138×138 | demonio con cuernos |
 
 Las carpetas `enemies/melee/` y `bosses/boss_1/` están reservadas para variantes y animaciones futuras.
 
@@ -63,7 +63,8 @@ elección, la consulta de cartas y el objeto del suelo.
 
 | Ruta | Carta | Estado | Respaldo |
 |---|---|---|---|
-| `cards/dano.png` | Fuerza | falta | espada dibujada |
+| `cards/dano.png` | Daño | falta | espada dibujada |
+| `cards/fuerza.png` | Fuerza | falta | espada y vínculo de invocación dibujados |
 | `cards/velocidad.png` | Agilidad | falta | rayo dibujado |
 | `cards/vida_maxima.png` | Vitalidad | falta | corazón con cruz dibujado |
 | `cards/dano_invocaciones.png` | Vínculo | falta | huella dibujada |
