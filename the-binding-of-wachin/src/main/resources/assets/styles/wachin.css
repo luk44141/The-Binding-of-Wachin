@@ -1,0 +1,223 @@
+/* ============================================================================
+   The Binding of Wachin - hoja de estilos principal (JavaFX CSS)
+   Estética: roguelike oscuro. Paleta: violeta casi negro, sangre, oro y cian.
+   Se aplica con Tema.aplicar(Scene). Si el archivo falta, los controles siguen
+   funcionando con el estilo por defecto de JavaFX.
+   ============================================================================ */
+
+.root-wachin {
+    -fx-font-family: "Segoe UI", "Helvetica Neue", "Noto Sans", "DejaVu Sans", Arial, sans-serif;
+    -fx-font-size: 15px;
+    -fx-background-color: #0b0a10;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* ---------- Botones ---------- */
+.btn-wachin {
+    -fx-background-color: linear-gradient(to bottom, #3b3252 0%, #251f36 100%);
+    -fx-background-insets: 0;
+    -fx-background-radius: 9;
+    -fx-border-color: #54476f;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 9;
+    -fx-text-fill: #ebe6f5;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 11 28 11 28;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.65), 10, 0.15, 0, 4);
+}
+.btn-wachin:hover {
+    -fx-background-color: linear-gradient(to bottom, #4d4170 0%, #30284a 100%);
+    -fx-border-color: #e6b84a;
+    -fx-text-fill: #ffffff;
+}
+.btn-wachin:focused {
+    -fx-border-color: #ffd873;
+    -fx-border-width: 2;
+}
+.btn-wachin:pressed {
+    -fx-background-color: linear-gradient(to bottom, #1d1830 0%, #2a2340 100%);
+    -fx-translate-y: 1;
+}
+.btn-wachin:disabled {
+    -fx-opacity: 0.38;
+}
+
+.btn-primario {
+    -fx-background-color: linear-gradient(to bottom, #d8344a 0%, #8f1a2b 100%);
+    -fx-border-color: #ff7088;
+    -fx-text-fill: #fff4f6;
+    -fx-font-size: 19px;
+    -fx-padding: 13 34 13 34;
+    -fx-effect: dropshadow(gaussian, rgba(255,69,96,0.45), 16, 0.2, 0, 3);
+}
+.btn-primario:hover {
+    -fx-background-color: linear-gradient(to bottom, #f04660 0%, #a3203a 100%);
+    -fx-border-color: #ffd873;
+}
+.btn-primario:pressed {
+    -fx-background-color: linear-gradient(to bottom, #7d1424 0%, #b52a40 100%);
+}
+
+.btn-peligro {
+    -fx-background-color: linear-gradient(to bottom, #4a2230 0%, #2b121c 100%);
+    -fx-border-color: #8f3a50;
+}
+.btn-peligro:hover {
+    -fx-background-color: linear-gradient(to bottom, #6a2c40 0%, #3b1826 100%);
+    -fx-border-color: #ff7088;
+}
+
+.btn-sutil {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #a79fbd;
+    -fx-effect: null;
+    -fx-font-size: 14px;
+}
+.btn-sutil:hover {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-text-fill: #ffffff;
+    -fx-border-color: transparent;
+}
+
+/* ---------- Paneles ---------- */
+.panel-modal {
+    -fx-background-color: linear-gradient(to bottom, #221d31 0%, #15121f 100%);
+    -fx-background-radius: 16;
+    -fx-border-color: linear-gradient(to bottom, #6a5a8f 0%, #3a3150 55%, #2a2340 100%);
+    -fx-border-width: 2;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.85), 40, 0.25, 0, 14);
+}
+.panel-modal-peligro {
+    -fx-border-color: linear-gradient(to bottom, #b0283c 0%, #5a1424 60%, #2a0c14 100%);
+    -fx-effect: dropshadow(gaussian, rgba(176,40,60,0.45), 50, 0.2, 0, 10);
+}
+.panel-modal-oro {
+    -fx-border-color: linear-gradient(to bottom, #ffd873 0%, #a37e22 60%, #4a3910 100%);
+    -fx-effect: dropshadow(gaussian, rgba(230,184,74,0.4), 50, 0.2, 0, 10);
+}
+.velo {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 75%, rgba(8,6,14,0.78) 0%, rgba(2,1,5,0.94) 100%);
+}
+
+.etiqueta-titulo {
+    -fx-text-fill: #f4efff;
+    -fx-font-family: "Georgia", "Palatino Linotype", "DejaVu Serif", serif;
+    -fx-font-size: 34px;
+    -fx-font-weight: bold;
+}
+.etiqueta-subtitulo {
+    -fx-text-fill: #a79fbd;
+    -fx-font-size: 15px;
+}
+.etiqueta-seccion {
+    -fx-text-fill: #e6b84a;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.etiqueta-dato {
+    -fx-text-fill: #e9e4f2;
+    -fx-font-size: 16px;
+}
+.etiqueta-tenue {
+    -fx-text-fill: #8a83a0;
+    -fx-font-size: 13px;
+}
+.etiqueta-error {
+    -fx-text-fill: #ff7088;
+    -fx-font-size: 14px;
+}
+
+/* ---------- Filas y tarjetas ---------- */
+.fila-slot {
+    -fx-background-color: rgba(255,255,255,0.045);
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(255,255,255,0.09);
+    -fx-border-radius: 10;
+    -fx-padding: 12 16 12 16;
+}
+.fila-slot:hover {
+    -fx-background-color: rgba(255,255,255,0.08);
+}
+.fila-invocacion {
+    -fx-background-color: linear-gradient(to right, rgba(155,109,255,0.14), rgba(255,255,255,0.03));
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(155,109,255,0.35);
+    -fx-border-radius: 10;
+    -fx-padding: 10 14 10 14;
+}
+
+.tarjeta-opcion {
+    -fx-background-color: linear-gradient(to bottom, #2a2340 0%, #181426 100%);
+    -fx-background-radius: 14;
+    -fx-border-color: #4a4066;
+    -fx-border-width: 2;
+    -fx-border-radius: 14;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.7), 14, 0.2, 0, 6);
+}
+.tarjeta-opcion:hover {
+    -fx-border-color: #ffd873;
+    -fx-effect: dropshadow(gaussian, rgba(255,216,115,0.5), 24, 0.25, 0, 0);
+}
+.tarjeta-opcion-activa {
+    -fx-background-color: linear-gradient(to bottom, #4a2a3a 0%, #2a1420 100%);
+    -fx-border-color: #ff4560;
+    -fx-effect: dropshadow(gaussian, rgba(255,69,96,0.6), 26, 0.3, 0, 0);
+}
+
+.tarjeta-carta {
+    -fx-background-color: linear-gradient(to bottom, #2c2444 0%, #161225 100%);
+    -fx-background-radius: 14;
+    -fx-border-color: linear-gradient(to bottom, #ffd873, #8a6a1e);
+    -fx-border-width: 2.5;
+    -fx-border-radius: 14;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 18, 0.25, 0, 8);
+}
+.tarjeta-carta:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255,216,115,0.65), 30, 0.3, 0, 0);
+}
+.tarjeta-carta-unica {
+    -fx-border-color: linear-gradient(to bottom, #e9a8ff, #7a3aa6);
+}
+
+/* ---------- Selector de calidad / interruptores ---------- */
+.toggle-wachin {
+    -fx-background-color: #231f33;
+    -fx-background-insets: 0;
+    -fx-background-radius: 8;
+    -fx-border-color: #3f3659;
+    -fx-border-radius: 8;
+    -fx-text-fill: #a79fbd;
+    -fx-font-weight: bold;
+    -fx-padding: 8 18 8 18;
+    -fx-cursor: hand;
+}
+.toggle-wachin:hover { -fx-border-color: #e6b84a; -fx-text-fill: #ffffff; }
+.toggle-wachin:selected {
+    -fx-background-color: linear-gradient(to bottom, #d8344a 0%, #8f1a2b 100%);
+    -fx-border-color: #ff7088;
+    -fx-text-fill: #ffffff;
+}
+
+/* ---------- Deslizador ---------- */
+.slider-wachin .track {
+    -fx-background-color: #231f33;
+    -fx-background-radius: 5;
+    -fx-pref-height: 8;
+    -fx-border-color: #3f3659;
+    -fx-border-radius: 5;
+}
+.slider-wachin .thumb {
+    -fx-background-color: linear-gradient(to bottom, #ffd873, #c89a2a);
+    -fx-background-radius: 12;
+    -fx-background-insets: 0;
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-effect: dropshadow(gaussian, rgba(230,184,74,0.6), 8, 0.3, 0, 0);
+}

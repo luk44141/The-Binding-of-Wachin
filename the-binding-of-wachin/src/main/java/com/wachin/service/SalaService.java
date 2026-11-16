@@ -103,13 +103,7 @@ public class SalaService {
      * Crea un enemigo Poli con vida, daño y velocidad determinados por el nivel.
      */
     private Enemigo crearEnemigo(int nivel, boolean aDistancia) {
-        /**
-         * Guarda vida para que la clase mantenga su estado interno.
-         */
         int vida = 38 + nivel * 17;
-        /**
-         * Guarda dano para que la clase mantenga su estado interno.
-         */
         int dano = 7 + nivel * 3;
         double velocidad;
         if (aDistancia) {

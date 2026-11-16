@@ -42,12 +42,22 @@ public final class ProgresionService {
             case 10 -> Jefe.Tipo.EMISOR_RAYOS;
             case 15 -> Jefe.Tipo.SALA_15;
             case 20 -> Jefe.Tipo.SALA_20;
-            default -> numeroGlobal >= 25 && (numeroGlobal - 25) % 20 == 0
-                    ? Jefe.Tipo.EMISOR_RAYOS : null;
+            default -> jefeRepetido(numeroGlobal);
         };
     }
 
-    public static boolean esCierreDeProgresion(int numeroGlobal) { return false; }
+    /**
+     * Después de la sala 20 el jefe cornudo regresa cada 20 salas (40, 60...) y el emisor de rayos
+     * aparece en las salas 25, 45, 65...
+     */
+    private static Jefe.Tipo jefeRepetido(int numeroGlobal) {
+        if (numeroGlobal >= 40 && numeroGlobal % 20 == 0) return Jefe.Tipo.SALA_20;
+        if (numeroGlobal >= 25 && (numeroGlobal - 25) % 20 == 0) return Jefe.Tipo.EMISOR_RAYOS;
+        return null;
+    }
+
+    /** La sala 20 cierra la primera progresión; después se puede seguir explorando. */
+    public static boolean esCierreDeProgresion(int numeroGlobal) { return numeroGlobal == 20; }
 
     /** La profundidad se reinicia cada cinco salas globales; el mapa avanza al siguiente bloque. */
     public static UbicacionSala ubicacionDeSala(int numeroGlobal) {
@@ -60,6 +70,10 @@ public final class ProgresionService {
     }
 
     public static Recompensa recompensaDeSala(int numeroGlobal) {
-        return numeroGlobal == 10 ? Recompensa.AUMENTAR_VIDA_MAXIMA : null;
+        return switch (numeroGlobal) {
+            case 10 -> Recompensa.AUMENTAR_VIDA_MAXIMA;
+            case 15 -> Recompensa.ELEGIR_CARTA;
+            default -> null;
+        };
     }
 }

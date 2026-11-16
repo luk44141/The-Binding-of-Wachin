@@ -10,13 +10,7 @@ import com.wachin.exception.EnergiaInsuficienteException;
  */
 public class Invocacion extends Entidad {
     public enum Estado { SIGUIENDO, PROTEGIENDO, ATACANDO, RECUPERANDO }
-    /**
-     * Constante que define costoenergia para este componente.
-     */
     private final int costoEnergia;
-    /**
-     * Guarda duracion para que la clase mantenga su estado interno.
-     */
     private final int duracion;
     private final TipoInvocacion tipoInvocacion;
     private final double velocidad;
@@ -29,6 +23,7 @@ public class Invocacion extends Entidad {
     private double tiempoAtaque;
     private Estado estado = Estado.SIGUIENDO;
     private boolean proteccionActiva;
+    private int espacio;
 
     /**
      * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
@@ -92,9 +87,6 @@ public class Invocacion extends Entidad {
      * Devuelve costo de energía sin exponer directamente el atributo.
      */
     public int getCostoEnergia() { return costoEnergia; }
-    /**
-     * Devuelve duración sin exponer directamente el atributo.
-     */
     public int getDuracion() { return duracion; }
     public TipoInvocacion getTipoInvocacion() { return tipoInvocacion; }
     public double getVelocidad() { return velocidad; }
@@ -105,6 +97,9 @@ public class Invocacion extends Entidad {
     public double getX() { return x; }
     public double getY() { return y; }
     public double getTiempoAtaque() { return tiempoAtaque; }
+    /** Ranura (0 o 1) que ocupa; determina de qué lado del jugador se coloca. */
+    public int getEspacio() { return espacio; }
+    public void setEspacio(int espacio) { this.espacio = espacio <= 0 ? 0 : 1; }
     public Estado getEstado() { return estado; }
     public boolean tieneProteccionActiva() { return proteccionActiva; }
     public void moverA(double x, double y) { this.x = x; this.y = y; }

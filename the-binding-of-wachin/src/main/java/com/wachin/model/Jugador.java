@@ -10,25 +10,10 @@ import com.wachin.exception.VidaInvalidaException;
  * Especializa Entidad con recursos propios. Hereda estado común, sobrescribe el ataque (polimorfismo) y encapsula sus campos privados.
  */
 public class Jugador extends Entidad {
-    /**
-     * Guarda experiencia para que la clase mantenga su estado interno.
-     */
     private int experiencia;
-    /**
-     * Guarda nivel para que la clase mantenga su estado interno.
-     */
     private int nivel;
-    /**
-     * Guarda monedas para que la clase mantenga su estado interno.
-     */
     private int monedas;
-    /**
-     * Guarda energia para que la clase mantenga su estado interno.
-     */
     private int energia;
-    /**
-     * Constante que define energiamaxima para este componente.
-     */
     private int energiaMaxima;
     private int vidaMaximaInicial;
     private ProyectilEquipable proyectilEquipado = ProyectilEquipable.GOTA;
@@ -36,6 +21,7 @@ public class Jugador extends Entidad {
     private int bonoDanoProyectiles;
     private int bonoDanoInvocaciones;
     private boolean segundoEspacioInvocacion;
+    private double recargaDisparo;
 
     /**
      * Constructor: valida los parámetros e inicializa el estado necesario del objeto.
@@ -78,17 +64,8 @@ public class Jugador extends Entidad {
         }
     }
 
-    /**
-     * Devuelve experiencia sin exponer directamente el atributo.
-     */
     public int getExperiencia() { return experiencia; }
-    /**
-     * Devuelve nivel sin exponer directamente el atributo.
-     */
     public int getNivel() { return nivel; }
-    /**
-     * Devuelve monedas sin exponer directamente el atributo.
-     */
     public int getMonedas() { return monedas; }
     /**
      * Devuelve energía actual sin exponer directamente el atributo.
@@ -105,6 +82,16 @@ public class Jugador extends Entidad {
         this.proyectilEquipado = proyectil;
     }
     public double getVelocidad() { return velocidad; }
+    /** Segundos que faltan para poder volver a disparar. */
+    public double getRecargaDisparo() { return recargaDisparo; }
+    public boolean puedeDisparar() { return recargaDisparo <= 0; }
+    public void reducirRecargaDisparo(double deltaTiempo) {
+        if (deltaTiempo > 0) recargaDisparo = Math.max(0, recargaDisparo - deltaTiempo);
+    }
+    public void iniciarRecargaDisparo(double segundos) {
+        if (!Double.isFinite(segundos) || segundos < 0) throw new IllegalArgumentException("Recarga de disparo inválida.");
+        recargaDisparo = segundos;
+    }
     public int getBonoDanoProyectiles() { return bonoDanoProyectiles; }
     public int getBonoDanoInvocaciones() { return bonoDanoInvocaciones; }
     public boolean tieneSegundoEspacioInvocacion() { return segundoEspacioInvocacion; }

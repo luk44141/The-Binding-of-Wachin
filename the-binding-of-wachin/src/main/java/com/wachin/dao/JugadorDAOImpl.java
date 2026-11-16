@@ -8,11 +8,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementa JugadorDAO mediante consultas JDBC para guardar y recuperar jugadores.
  */
 public class JugadorDAOImpl implements JugadorDAO {
+    private static final Logger REGISTRO = Logger.getLogger(JugadorDAOImpl.class.getName());
 
     @Override
     /**
@@ -20,9 +23,6 @@ public class JugadorDAOImpl implements JugadorDAO {
      */
     public void guardar(Jugador jugador) {
 
-        /**
-         * Guarda sql para que la clase mantenga su estado interno.
-         */
         String sql = "INSERT INTO Entidades " +
                 "(nombre, vida, vida_max, dano, tipo, experiencia, nivel, monedas, energia, energia_maxima) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -44,7 +44,7 @@ public class JugadorDAOImpl implements JugadorDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println("Error al guardar jugador: " + e.getMessage());
+            REGISTRO.log(Level.WARNING, "Error al guardar jugador", e);
         }
     }
 
@@ -54,9 +54,6 @@ public class JugadorDAOImpl implements JugadorDAO {
      */
     public Jugador buscarPorId(int id) {
 
-        /**
-         * Guarda sql para que la clase mantenga su estado interno.
-         */
         String sql = "SELECT * FROM Entidades WHERE id = ? AND tipo = 'JUGADOR'";
 
         try (Connection conexion = ConexionBD.conectar();
@@ -83,7 +80,7 @@ public class JugadorDAOImpl implements JugadorDAO {
             }
 
         } catch (Exception e) {
-            System.out.println("Error al buscar jugador: " + e.getMessage());
+            REGISTRO.log(Level.WARNING, "Error al buscar jugador", e);
         }
 
         return null;
@@ -97,9 +94,6 @@ public class JugadorDAOImpl implements JugadorDAO {
 
         List<Jugador> jugadores = new ArrayList<>();
 
-        /**
-         * Guarda sql para que la clase mantenga su estado interno.
-         */
         String sql = "SELECT * FROM Entidades WHERE tipo = 'JUGADOR'";
 
         try (Connection conexion = ConexionBD.conectar();
@@ -125,7 +119,7 @@ public class JugadorDAOImpl implements JugadorDAO {
             }
 
         } catch (Exception e) {
-            System.out.println("Error al listar jugadores: " + e.getMessage());
+            REGISTRO.log(Level.WARNING, "Error al listar jugadores", e);
         }
 
         return jugadores;
@@ -137,9 +131,6 @@ public class JugadorDAOImpl implements JugadorDAO {
      */
     public void actualizar(Jugador jugador) {
 
-        /**
-         * Guarda sql para que la clase mantenga su estado interno.
-         */
         String sql = "UPDATE Entidades SET " +
                 "nombre = ?, vida = ?, vida_max = ?, dano = ?, " +
                 "experiencia = ?, nivel = ?, monedas = ?, " +
@@ -163,7 +154,7 @@ public class JugadorDAOImpl implements JugadorDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println("Error al actualizar jugador: " + e.getMessage());
+            REGISTRO.log(Level.WARNING, "Error al actualizar jugador", e);
         }
     }
 
@@ -173,9 +164,6 @@ public class JugadorDAOImpl implements JugadorDAO {
      */
     public void eliminar(int id) {
 
-        /**
-         * Guarda sql para que la clase mantenga su estado interno.
-         */
         String sql = "DELETE FROM Entidades WHERE id = ? AND tipo = 'JUGADOR'";
 
         try (Connection conexion = ConexionBD.conectar();
@@ -185,7 +173,7 @@ public class JugadorDAOImpl implements JugadorDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println("Error al eliminar jugador: " + e.getMessage());
+            REGISTRO.log(Level.WARNING, "Error al eliminar jugador", e);
         }
     }
 }

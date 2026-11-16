@@ -23,60 +23,48 @@ El código fuente principal se encuentra en:
 
 ```text
 src/
-└── main/
-    ├── java/
-    │   └── com/
-    │       └── wachin/
-    │           ├── GameApp.java
-    │           ├── ConfiguracionPartida.java
-    │           ├── controller/
-    │           │   ├── PartidaController.java
-    │           │   └── MapaController.java
-    │           ├── model/
-    │           │   ├── Entidad.java
-    │           │   ├── Jugador.java
-    │           │   ├── Enemigo.java
-    │           │   ├── Jefe.java
-    │           │   ├── Invocacion.java
-    │           │   └── Sala.java
-    │           ├── service/
-    │           │   ├── CombateService.java
-    │           │   ├── ColisionService.java
-    │           │   ├── JuegoService.java
-    │           │   ├── JugadorService.java
-    │           │   └── SalaService.java
-    │           ├── view/
-    │           │   ├── game/
-    │           │   │   ├── PartidaView.java
-    │           │   │   ├── AssetVisual.java
-    │           │   │   ├── EnemigoVisual.java
-    │           │   │   ├── Proyectil.java
-    │           │   │   └── PuertaVisual.java
-    │           │   └── menu/
-    │           │       └── MenuInicial.java
-    │           ├── interfaces/
-    │           │   └── Atacable.java
-    │           ├── exception/
-    │           │   ├── DanoInvalidoException.java
-    │           │   ├── EnergiaInsuficienteException.java
-    │           │   ├── ExperienciaInsuficienteException.java
-    │           │   ├── InvocacionNoDisponibleException.java
-    │           │   ├── NombreInvalidoException.java
-    │           │   ├── VidaInvalidaException.java
-    │           │   └── VidaMaximaException.java
-    │           └── dao/
-    │               ├── ConexionBD.java
-    │               ├── EntidadDAO.java
-    │               ├── EntidadDAOImpl.java
-    │               ├── JugadorDAO.java
-    │               └── JugadorDAOImpl.java
-    └── resources/
-        └── assets/
-            └── images/
-                ├── player/
-                ├── enemies/
-                ├── bosses/
-                └── projectiles/
+├── main/
+│   ├── java/com/wachin/
+│   │   ├── GameApp.java                 ventana, escalado, F11, cambio menú/partida
+│   │   ├── Main.java                    prueba manual de la conexión a MySQL
+│   │   ├── ConfiguracionPartida.java    personaje y proyectil elegidos
+│   │   ├── controller/
+│   │   │   ├── PartidaController.java   orquesta la partida y ejecuta el ciclo de juego
+│   │   │   ├── ContextoPartida.java     estado y servicios compartidos por los controladores
+│   │   │   ├── JugadorController.java   entrada, movimiento y disparo con cadencia
+│   │   │   ├── EnemigosController.java  persecución, dispersión, ataques y contacto
+│   │   │   ├── InvocacionesController.java  movimiento y ataques de invocaciones
+│   │   │   ├── CombateController.java   proyectiles, daño y muertes
+│   │   │   ├── ObjetosController.java   objetos del suelo, cartas y recompensas
+│   │   │   ├── SalaController.java      salas, puertas, transiciones y victoria
+│   │   │   ├── GuardadoController.java  crear y restaurar el estado de la partida
+│   │   │   ├── PausaController.java     menú de pausa, guardado y carga
+│   │   │   ├── Retroalimentacion.java   partículas, sacudida y sonido por evento
+│   │   │   └── MapaController.java      grafo de salas y progresión
+│   │   ├── model/                       Entidad, Jugador, Enemigo, Jefe, Invocacion, Sala,
+│   │   │                                Carta, ObjetoSuelo, Proyectil, EstadoPartida,
+│   │   │                                EstadisticasPartida y enumeraciones
+│   │   ├── service/                     Combate, Colision, EnemigoIA, Jefe, Invocacion,
+│   │   │                                Juego, Jugador, Sala, Progresion, Recompensa,
+│   │   │                                ObjetoSuelo, Carta, Mejoras, Partida,
+│   │   │                                Ajustes y Sonido
+│   │   ├── view/
+│   │   │   ├── game/   PartidaView, HudView, EscenarioView, JugadorVisual, EnemigoVisual,
+│   │   │   │           InvocacionVisual, ProyectilVisual, ObjetoSueloVisual, PuertaVisual,
+│   │   │   │           SombraVisual, AssetVisual, CatalogoAssets, Dibujos
+│   │   │   ├── fx/     CapaEfectos (partículas y textos), Iluminacion
+│   │   │   ├── ui/     Tema, BarraRecurso, FondoAnimado, ContenedorEscalado,
+│   │   │   │           PantallaModal, Pantallas, TarjetaCarta
+│   │   │   └── menu/   MenuInicial
+│   │   ├── interfaces/ Atacable
+│   │   ├── exception/  excepciones del dominio
+│   │   └── dao/        acceso a MySQL (ConexionBD, EntidadDAO, JugadorDAO, PartidaDAO)
+│   └── resources/assets/
+│       ├── ASSETS.md                    rutas y nombres exactos de cada recurso
+│       ├── styles/wachin.css            hoja de estilos JavaFX del tema oscuro
+│       └── images/                      player, enemies, bosses, summons, projectiles,
+│                                        cards, pickups, environment...
+└── test/java/com/wachin/                pruebas JUnit 4 de modelo, servicios, controlador y assets
 ```
 
 Cada paquete agrupa clases que cumplen una funcion relacionada. Esto evita que todo el codigo este concentrado en una sola clase y permite modificar una parte del proyecto sin tener que reescribir las demas.
@@ -212,42 +200,25 @@ El controlador conecta los datos del modelo, la logica de los servicios y los el
 
 No es el encargado de dibujar cada elemento desde cero. Su funcion es decidir cuando deben crearse, moverse, eliminarse o actualizarse.
 
-4.1) PartidaController.java
-Es una de las clases centrales del proyecto. Coordina el funcionamiento de una partida completa.
+4.1) PartidaController.java y los controladores de la partida
+PartidaController dejo de concentrar toda la logica. Ahora solo orquesta una partida: crea o restaura el estado,
+ejecuta el ciclo del juego (AnimationTimer), recibe el teclado y decide cuando se muestra la derrota o la victoria.
+Cada responsabilidad vive en una clase propia del paquete controller, que comparten un ContextoPartida (posicion
+del jugador, listas de entidades visuales, banderas de estado y servicios):
 
-Mantiene referencias a PartidaView, ConfiguracionPartida, los servicios y MapaController.
+- JugadorController: teclas presionadas, movimiento (WASD), disparo en una sola direccion con las flechas y
+  cadencia de 0,24 s (mantener la flecha dispara de forma continua), invulnerabilidad.
+- EnemigosController: persecucion con dispersion, tiradores que mantienen la distancia, ataques y avisos de los
+  jefes, dano por contacto. Los enemigos se bloquean entre si y se empujan suavemente para rodear al jugador.
+- InvocacionesController: movimiento suavizado y ataques de las invocaciones. No colisionan con nada.
+- CombateController: proyectiles del jugador y hostiles, dano, muerte de enemigos, experiencia y drops.
+- ObjetosController: recogida de objetos del suelo, seleccion de cartas, reemplazo de invocaciones y recompensas de jefe.
+- SalaController: preparar y limpiar salas, puertas, transiciones con fundido y deteccion de sala completada.
+- GuardadoController y PausaController: instantanea y restauracion del estado, y menu de pausa.
+- Retroalimentacion: un unico lugar que traduce eventos (disparo, impacto, muerte...) en particulas, sacudida y sonido.
 
-Tambien administra colecciones de proyectiles y enemigos visuales, las teclas presionadas, las coordenadas del jugador y el estado de la partida.
-
-Metodos importantes:
-
-iniciar() crea al jugador, prepara la primera sala e inicia el ciclo de actualizacion.
-
-detener() detiene el AnimationTimer que ejecuta el ciclo del juego.
-
-teclaPresionada(KeyCode tecla) registra las teclas que se mantienen presionadas. Utiliza un HashSet para evitar registrar varias veces la misma tecla.
-
-teclaLiberada(KeyCode tecla) elimina una tecla del conjunto cuando el usuario deja de presionarla.
-
-manejarTecla(KeyCode tecla) interpreta acciones puntuales. Por ejemplo, las flechas disparan proyectiles y Escape activa o desactiva la pausa.
-
-crearJugador() construye el objeto Jugador y su representacion visual. Tambien utiliza la configuracion elegida en el menu para seleccionar la imagen correspondiente.
-
-prepararSala() limpia los elementos de la sala anterior, genera la nueva sala, crea sus enemigos y configura las puertas.
-
-disparar() crea un objeto Proyectil, calcula su direccion y lo agrega a la vista.
-
-actualizarJugador() calcula el movimiento del jugador a partir de las teclas presionadas y el tiempo transcurrido.
-
-actualizarEnemigos() actualiza el movimiento de los enemigos y comprueba si alguno colisiona con el jugador.
-
-actualizarProyectiles() desplaza los proyectiles y comprueba si salen de la sala o impactan contra un enemigo.
-
-atacarEnemigo() utiliza CombateService para aplicar el dano y comprueba si el enemigo fue derrotado.
-
-verificarEstado() comprueba si el jugador sigue vivo y si la sala quedo sin enemigos. Cuando no quedan enemigos, habilita las puertas.
-
-actualizarHUD() envia los datos actuales del jugador y de la sala a la vista para actualizar la informacion de pantalla.
+Metodos publicos de PartidaController: iniciar(), detener(), alPresionarTecla(KeyCode) y alLiberarTecla(KeyCode).
+Sus salidas hacia GameApp se agrupan en el record PartidaController.Acciones (reintentar, cargar, volver al menu).
 
 4.2) MapaController.java
 MapaController administra la estructura de salas y el progreso del jugador por el mapa.
@@ -340,110 +311,43 @@ obtenerNumeroMapa() calcula a que mapa pertenece una sala.
 Este servicio se ocupa de generar los objetos logicos. La representacion visual de esos enemigos se crea posteriormente desde el controlador y las clases de view.
 
 6) PAQUETE VIEW: REPRESENTACION VISUAL
-El paquete view contiene las clases que construyen y administran los elementos que aparecen en pantalla.
+El paquete view contiene las clases que construyen y administran lo que aparece en pantalla. En JavaFX, la interfaz
+es un arbol de nodos; mover un nodo o cambiar sus propiedades actualiza lo que se ve.
 
-En JavaFX, la interfaz se organiza mediante una estructura de nodos. Cada elemento visual es un nodo que puede agregarse a un contenedor.
-
-Por ejemplo, un Pane puede contener imagenes, textos, rectangulos, circulos y otros elementos. Cuando se modifica la posicion o las propiedades de esos nodos, JavaFX actualiza su representacion.
+Principio de diseno: todo lo que pueda dibujarse por codigo tiene una alternativa visual de calidad cuando falta el PNG.
+Los sprites existentes siguen funcionando; si falta uno, se usa la ilustracion generada por Dibujos.
 
 6.1) PartidaView.java
-Es la clase que construye la pantalla principal de la partida.
+Compone las capas de la partida (de abajo hacia arriba): escenario, objetos del suelo, entidades ordenadas por
+profundidad (viewOrder segun la coordenada Y), luz del jugador, proyectiles, efectos, vineta, destello de dano, HUD,
+fundido de transiciones y pantalla modal. Ofrece sacudir(), transicionar(), actualizarHUD() y mostrarPantalla().
 
-Utiliza un Pane llamado raiz como contenedor principal. Dentro de este contenedor agrega el fondo, la sala, las puertas, los textos del HUD, el jugador, los enemigos y los proyectiles.
+6.2) AssetVisual.java, CatalogoAssets.java y Dibujos.java
+CatalogoAssets concentra las rutas (la primera de cada lista es el nombre documentado en ASSETS.md). AssetVisual carga
+cada imagen una sola vez con cache y devuelve el sprite real o la ilustracion procedural. Dibujos genera, con Canvas,
+los personajes, jefes, invocaciones, proyectiles e iconos que no tienen sprite propio.
 
-Metodos importantes:
+6.3) EscenarioView.java
+Pinta el piso, las paredes, la decoracion, las antorchas y las puertas. El fondo se compone una vez por mapa, tipo de
+sala y variante y se guarda en cache. Las salas de jefe usan una variante roja con circulo de runas.
 
-crearEscenario() configura el fondo y el rectangulo que representa la sala.
+6.4) Visuales de entidades
+JugadorVisual, EnemigoVisual, InvocacionVisual, ProyectilVisual, ObjetoSueloVisual y PuertaVisual muestran su modelo,
+con sombra y animaciones procedurales (caminar, disparar, destello al recibir dano, aparicion). EnemigoVisual tambien
+dibuja los avisos de ataque de los jefes. Ninguna contiene reglas de juego.
 
-crearPuertas() crea las cuatro puertas posibles utilizando PuertaVisual.
-
-crearHUD() crea los textos y elementos que muestran informacion de la partida.
-
-configurarSala() cambia la apariencia del escenario dependiendo del mapa y de si es una sala de jefe.
-
-configurarSalidas() muestra las puertas disponibles y determina si estan abiertas.
-
-agregarJugador() incorpora el nodo visual del jugador al contenedor principal.
-
-agregarEnemigo() y quitarEnemigo() agregan o eliminan enemigos de la pantalla.
-
-agregarProyectil() y quitarProyectil() hacen lo mismo con los proyectiles.
-
-actualizarHUD() recibe los datos del jugador y de la sala para actualizar los textos de vida, experiencia, nivel, enemigos, mapa y dificultad.
-
-mostrarPausa() crea una capa visual con el menu de pausa.
-
-ocultarPausa() elimina esa capa de la pantalla.
-
-La vista no calcula el movimiento ni decide cuanto dano recibe un personaje. Recibe la informacion y actualiza los elementos visuales.
-
-6.2) AssetVisual.java
-
-Es una clase auxiliar que centraliza la carga de imagenes.
-
-Su metodo principal es crear(). Recibe la ruta de un recurso, la posicion, el tamano y algunos parametros de respaldo.
-
-Primero intenta encontrar la imagen dentro de los recursos del proyecto mediante getResourceAsStream(). Si la encuentra, crea un objeto Image y luego un ImageView.
-
-El ImageView es el nodo de JavaFX que permite mostrar una imagen en pantalla. Se configura su ancho, alto y posicion.
-
-Si la imagen no se puede cargar, el metodo crea un Circle como representacion alternativa. Esto permite que el objeto siga siendo visible aunque falte un archivo PNG.
-
-moverAlCentro() actualiza la posicion del elemento. Comprueba si el nodo es un ImageView o un Circle y modifica sus coordenadas segun corresponda.
-
-6.3) EnemigoVisual.java
-Representa visualmente a un enemigo y administra su movimiento.
-
-Recibe un objeto Enemigo del modelo, pero tambien mantiene sus propias coordenadas, su imagen, su barra de vida y los datos necesarios para las colisiones.
-
-Esto significa que hay una separacion entre el enemigo logico y el enemigo visual:
-- Enemigo almacena vida, dano, tipo y velocidad.
-- EnemigoVisual administra su posicion en pantalla, imagen, movimiento y barra de vida.
-
-La clase tambien diferencia entre enemigos normales y jefes mediante instanceof Jefe.
-
-Para los enemigos normales, actualizar() calcula el movimiento hacia la posicion del jugador.
-
-Para los jefes, utiliza una maquina de estados con cuatro fases:
-- PERSEGUIR: el jefe se desplaza hacia el jugador.
-- PREPARAR: calcula y muestra la direccion de la embestida.
-- EMBESTIR: se desplaza rapidamente en la direccion calculada.
-- RECUPERAR: espera antes de volver a perseguir.
-
-actualizarBarraVida() calcula el porcentaje de vida restante y modifica el ancho de la barra.
-
-getDanoContacto() devuelve el dano normal del enemigo o el dano aumentado cuando el jefe esta realizando una embestida.
-
-6.4) Proyectil.java
-Representa un proyectil disparado por el jugador.
-
-Guarda su posicion actual, posicion anterior, velocidad horizontal y vertical, dano y nodo visual.
-
-actualizar(double deltaTiempo) modifica las coordenadas segun la velocidad y el tiempo transcurrido.
-
-estaFueraDeLaSala() comprueba si el proyectil salio de los limites del escenario.
-
-getVisual() devuelve el nodo que se agrega a PartidaView.
-
-Tambien permite rotar la imagen segun la direccion del disparo.
-
-6.5) PuertaVisual.java
-Representa una puerta en una de las cuatro direcciones posibles.
-
-Utiliza el enum Direccion, que define ARRIBA, ABAJO, IZQUIERDA y DERECHA.
-
-Cada puerta tiene un rectangulo que funciona como representacion visual. El metodo setAbierta() modifica su color dependiendo de si esta disponible.
-
-La clase no decide que sala hay detras de una puerta. Esa responsabilidad corresponde a MapaController.
+6.5) HudView.java y el paquete ui
+HudView muestra vida, experiencia, nivel, invocaciones con vida y energia, cartas, proyectil, progreso del mapa, barra
+de jefe, avisos y carteles. El paquete ui contiene el tema (Tema + wachin.css), BarraRecurso, PantallaModal, Pantallas
+(pausa, ajustes, guardado, cartas, derrota, victoria...), TarjetaCarta, FondoAnimado y ContenedorEscalado.
 
 6.6) MenuInicial.java
-Construye el menu inicial y el menu de reintento.
+Menu principal: eleccion de personaje y de proyectil inicial, jugar, cargar partida (desde MySQL), ajustes y salir.
+Recibe sus operaciones mediante el record MenuInicial.Acciones.
 
-Utiliza componentes de JavaFX como StackPane, VBox, Text, Button y ComboBox.
-
-Permite seleccionar el personaje y el tipo de proyectil. Cuando se presiona el boton de jugar, crea un objeto ConfiguracionPartida y se lo entrega al codigo que inicio el menu.
-
-Para realizar esa comunicacion utiliza Consumer<ConfiguracionPartida>, una interfaz funcional de Java que permite recibir una funcion como parametro.
+6.7) CapaEfectos.java e Iluminacion.java (paquete fx)
+CapaEfectos dibuja particulas, anillos y textos flotantes sobre un unico Canvas con un maximo de particulas; su cantidad
+se escala con el ajuste de calidad. Iluminacion aporta la vineta, la luz que sigue al jugador y el destello de dano.
 
 7) COMO SE DIBUJA Y ACTUALIZA EL JUEGO EN PANTALLA
 Esta es una de las partes mas importantes para entender el funcionamiento tecnico del proyecto.
@@ -497,15 +401,15 @@ Para eso se utiliza AnimationTimer, una clase de JavaFX que ejecuta repetidament
 Dentro de PartidaController, este ciclo actualiza el estado del juego.
 
 El orden general es:
-1. Comprueba si la partida esta pausada o terminada.
-2. Calcula el tiempo transcurrido desde la ultima actualizacion.
-3. Actualiza el tiempo de invulnerabilidad.
-4. Actualiza el movimiento del jugador.
-5. Comprueba si el jugador ingreso por una puerta.
-6. Actualiza el movimiento de los enemigos.
-7. Actualiza los proyectiles y sus impactos.
-8. Comprueba si la sala fue completada.
-9. Actualiza la informacion del HUD.
+1. Si la partida esta pausada, no avanza; si esta terminada o en transicion, solo se animan los efectos.
+2. Calcula el tiempo transcurrido desde la ultima actualizacion (limitado a 0,05 s).
+3. JugadorController: invulnerabilidad, cadencia, movimiento y disparo.
+4. SalaController: comprueba si el jugador cruzo una puerta abierta (inicia el fundido de transicion).
+5. EnemigosController: movimiento, dispersion, ataques de jefes y dano por contacto.
+6. InvocacionesController y ObjetosController: invocaciones y recogida de objetos.
+7. CombateController: proyectiles hostiles y del jugador, impactos, muertes y drops.
+8. verificarEstado(): derrota, sala completada, carta de las salas pares y victoria de la sala 20.
+9. Actualiza el HUD y las animaciones de la vista.
 
 7.5) Delta time: movimiento independiente de los FPS
 
@@ -886,6 +790,92 @@ mvn clean javafx:run
 
 clean elimina los archivos generados por compilaciones anteriores. javafx:run ejecuta la aplicacion utilizando la configuracion de JavaFX definida en Maven.
 
-NOTA TECNICA SOBRE LA IMPLEMENTACION ACTUAL(Sirve para mantener la documentacion actualizada)
+11) ESTADO DE IMPLEMENTACION: LO DOCUMENTADO FRENTE A LO REAL
 
-La documentacion describe las responsabilidades y los metodos que aparecen en la rama develop hasta el 5/11. Algunas clases tienen funcionalidades preparadas para ampliar el proyecto, como las invocaciones y sus operaciones de energia. No significa que todas esas funcionalidades esten conectadas actualmente al ciclo principal de la partida. Del mismo modo, el paquete DAO existe, pero no debe confundirse con la logica que controla el combate y el movimiento durante una partida.
+Comparacion de CosasAgregar.txt, este README y ASSETS.md con el codigo (actualizado el 13/11/2026).
+
+Implementado:
+- Sprites de paredes, piso y puerta, con variante de sala de jefe (piso rojo con runas, puerta dorada y archivos opcionales boss_*).
+- Jefes: Palinni (sala 5), Emisor de rayos (sala 10), Artillero (sala 15) y jefe con cuernos (sala 20; vuelve cada 20 salas desde la 40).
+- Disparo en una sola direccion (flechas), ahora con cadencia y disparo continuo al mantener la flecha.
+- Enemigos de dos tipos: policia (cuerpo a cuerpo) y tirador (a distancia, retrocede si te acercas).
+- Invocaciones Gusano (tanquea y protege), Murcielago (cuerpo a cuerpo) y Robot (laser).
+- Recompensas de jefe: sala 10 aumenta la vida maxima (+25%); sala 15 ofrece elegir una carta.
+- Menu de pausa con cartas, invocaciones, guardar y cargar partida (3 espacios en MySQL), ajustes.
+- Colisiones: el jugador y los enemigos no atraviesan a los enemigos; los enemigos se dispersan y rodean al jugador.
+- Animaciones de caminar y disparar (procedurales, sin hojas de sprites).
+- Invocaciones sin colision y con movimiento suavizado.
+- Los jefes sueltan una invocacion con 75% de probabilidad.
+- Seleccion de proyectil inicial en el menu (estaba documentada en este README pero no existia).
+
+Corregido durante esta revision:
+- La recompensa de la sala 15 no existia: ahora ese jefe ofrece la eleccion de carta.
+- El jefe con cuernos aparecia una sola vez: ahora regresa cada 20 salas.
+- Las rutas de piso, pared y puerta no coincidian con los archivos, asi que nunca se cargaban. Ver ASSETS.md.
+- emisor_rayos.png tenia fondo blanco solido (cuadrado blanco en pantalla).
+- Cada proyectil volvia a leer su PNG del disco: ahora las imagenes se cargan una sola vez.
+- La pantalla de victoria era inalcanzable (esCierreDeProgresion siempre devolvia false): ahora aparece al vencer
+  al jefe de la sala 20 y permite seguir explorando o volver al menu.
+- Tres pruebas existentes tenian expectativas desactualizadas respecto al codigo (jefe de la sala 10, intervalo del
+  tirador y recompensa de la sala 15) y se actualizaron.
+
+Incompleto o dependiente de recursos externos:
+- Sprites propios de: tirador, jefes de las salas 15 y 20, invocaciones, proyectiles hostiles, cartas, puerta abierta y
+  puertas de jefe. Hasta que existan se muestra una ilustracion dibujada por codigo (ver ASSETS.md).
+- Guardar y cargar requiere MySQL (ver the_binding_of_wachin.sql y ConexionBD). Sin base de datos el juego muestra el
+  error en pantalla y sigue funcionando.
+- La energia del jugador existe en el modelo pero ninguna mecanica la consume, por eso el HUD solo muestra las barras
+  de vida y experiencia del jugador y las de vida y energia de cada invocacion.
+- "La gota esta bugeada" (CosasAgregar.txt) no indica cual es el fallo. Se reviso la carga, la rotacion, la hitbox, el
+  objeto del suelo y el cambio de proyectil de la gota y no se encontro un error de logica; si persiste, conviene
+  describir como se manifiesta.
+
+12) EFECTOS, ANIMACIONES Y AJUSTES
+
+- Particulas, anillos y textos de dano: CapaEfectos (un solo Canvas, maximo de particulas acotado).
+- Sacudida de camara, destello rojo al recibir dano, fundido negro al cambiar de sala y vineta: PartidaView e Iluminacion.
+- Aparicion de enemigos y jefes con animacion; los jefes muestran un cartel y no atacan mientras aparecen.
+- Avisos de ataque de los jefes (carril de embestida, disparo y laser, anillo radial y zonas de impacto).
+- Sonido: SonidoService sintetiza los efectos en memoria; si existe assets/audio/<efecto>.wav se usa ese archivo.
+- Ajustes (AjustesService, guardados con java.util.prefs): volumen, calidad de efectos, sacudida y numeros de dano.
+- La ventana es redimensionable (ContenedorEscalado mantiene la proporcion) y F11 alterna la pantalla completa.
+
+13) PRUEBAS
+
+Las pruebas JUnit 4 estan en src/test/java y cubren modelo, servicios, MapaController, el catalogo de assets (incluida
+la coherencia con ASSETS.md y la transparencia del jefe emisor), los ajustes y el limite de FPS. Se ejecutan con:
+
+mvn test
+
+El codigo de vistas y controladores de partida depende de JavaFX y se verifico de forma manual, no con pruebas automaticas.
+
+14) RENDIMIENTO Y LIMITE DE FPS
+
+JavaFX limita la animacion a 60 fps por defecto. GameApp aplica al arrancar las propiedades del limite elegido en
+Ajustes (AjustesService.propiedadesDeRendimiento) sin pisar las que se pasen con -D:
+
+- 60 / 144 / 240 FPS: javafx.animation.pulse=N (con VSync, la velocidad real no supera la frecuencia del monitor).
+  El valor por defecto es 240: se adapta al monitor, sea de 60, 144 o 240 Hz.
+- SIN LIMITE: javafx.animation.fullspeed=true y prism.vsync=false (puede haber tearing y usa toda la CPU/GPU).
+
+El cambio de limite se aplica al reiniciar el juego. F3 muestra u oculta un contador de FPS en pantalla.
+
+Que se optimizo (medido con un renderizador por software, donde cada mejora se nota mucho mas que con GPU):
+- Los textos del HUD usaban contorno nativo (StrokeType.OUTSIDE), que cuesta cerca de un tercio del fotograma. Ahora
+  EtiquetaContorno dibuja una sombra con un segundo texto y todo el HUD estatico se guarda como bitmap (cache).
+- Las barras (BarraRecurso) ya no repintan mientras estan en reposo.
+- Sombras, brillos, halos, auras y portales usan imagenes compartidas pregeneradas (Brillo) en lugar de degradados
+  radiales y mezclas ADD por nodo. Se quitaron los DropShadow del juego.
+- La vineta de pantalla se pinta una vez en el fondo de cada sala en lugar de cubrir la pantalla en cada fotograma.
+- El fondo del menu es una imagen fija y solo las brasas se animan.
+
+Resultado en el entorno de pruebas (sin GPU, sin limite de fotogramas): de ~5 fps a ~35 fps en la misma partida. Con una GPU
+real el margen es mucho mayor, pero esa cifra no se pudo medir aqui. Si el juego sigue lento en tu equipo, ejecutalo con
+-Dprism.verbose=true: si imprime "sw" como pipeline, JavaFX esta usando renderizado por software (sin aceleracion).
+
+NOTA TECNICA SOBRE LA IMPLEMENTACION ACTUAL (sirve para mantener la documentacion actualizada)
+
+Esta documentacion describe el estado del proyecto tras la revision del 13/11/2026. Las secciones 3, 5, 8 y 10 conservan
+su explicacion original; donde nombran PartidaController, PartidaView o Proyectil como unicos responsables, la
+responsabilidad esta ahora repartida segun las secciones 1, 4.1 y 6. El paquete DAO solo se usa para guardar y cargar
+partidas y para la conexion con MySQL; no interviene en el combate ni en el movimiento.

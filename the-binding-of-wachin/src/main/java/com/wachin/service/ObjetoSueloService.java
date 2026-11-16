@@ -15,6 +15,8 @@ import java.util.Random;
 public final class ObjetoSueloService {
     private static final double PROBABILIDAD_DROP_ENEMIGO = 0.02;
     private static final double PROBABILIDAD_CARTA_UNICA = 0.002;
+    /** Probabilidad de que cualquier jefe suelte una invocación. */
+    public static final double PROBABILIDAD_INVOCACION_JEFE = 0.75;
     private final Map<Long, ObjetoSuelo> objetos = new LinkedHashMap<>();
     private final Random random;
 
@@ -73,11 +75,10 @@ public final class ObjetoSueloService {
     }
 
 
-    /** Los jefes siempre pueden dejar una invocacion: 100% en sala 5 y 50% en el resto. */
+    /** Todos los jefes sueltan una invocación con una probabilidad del 75%. */
     public Optional<ObjetoSuelo> crearDropInvocacionJefe(int sala, double x, double y,
             List<TipoInvocacion> invocacionesPermitidas) {
-        double probabilidad = sala == 5 ? 1.0 : 0.5;
-        if (random.nextDouble() >= probabilidad
+        if (random.nextDouble() >= PROBABILIDAD_INVOCACION_JEFE
                 || invocacionesPermitidas == null || invocacionesPermitidas.isEmpty()) {
             return Optional.empty();
         }

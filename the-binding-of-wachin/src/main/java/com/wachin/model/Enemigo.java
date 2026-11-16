@@ -8,15 +8,10 @@ import com.wachin.exception.VidaInvalidaException;
  * Especializa Entidad con tipo y velocidad; puede redefinir operaciones heredadas mediante polimorfismo.
  */
 public class Enemigo extends Entidad {
-    /**
-     * Constante que define tipoenemigo para este componente.
-     */
     private final String tipoEnemigo;
-    /**
-     * Guarda velocidad para que la clase mantenga su estado interno.
-     */
     private final double velocidad;
     private double tiempoAtaque;
+    private int ordenDispersion;
     private double x;
     private double y;
     private double xAnterior;
@@ -53,11 +48,11 @@ public class Enemigo extends Entidad {
      * Devuelve tipo de enemigo sin exponer directamente el atributo.
      */
     public String getTipoEnemigo() { return tipoEnemigo; }
-    /**
-     * Devuelve velocidad sin exponer directamente el atributo.
-     */
     public double getVelocidad() { return velocidad; }
     public double getTiempoAtaque() { return tiempoAtaque; }
+    /** Índice que reparte a los enemigos en ángulos distintos alrededor del jugador. */
+    public int getOrdenDispersion() { return ordenDispersion; }
+    public void setOrdenDispersion(int orden) { this.ordenDispersion = Math.max(0, orden); }
     public double getX() { return x; }
     public double getY() { return y; }
     public double getXAnterior() { return xAnterior; }

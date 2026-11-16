@@ -10,17 +10,8 @@ import com.wachin.exception.VidaInvalidaException;
 public class Jefe extends Enemigo {
     public enum Tipo { SALA_10, EMISOR_RAYOS, SALA_15, SALA_20 }
 
-    /**
-     * Constante que define niveljefe para este componente.
-     */
     private final int nivelJefe;
-    /**
-     * Constante que define ataqueespecial para este componente.
-     */
     private final String ataqueEspecial;
-    /**
-     * Constante que define danoadicional para este componente.
-     */
     private final int danoAdicional;
     private final Tipo tipoJefe;
 
@@ -78,9 +69,6 @@ public class Jefe extends Enemigo {
      * Devuelve nivel del jefe sin exponer directamente el atributo.
      */
     public int getNivelJefe() { return nivelJefe; }
-    /**
-     * Devuelve ataqueespecial sin exponer directamente el atributo.
-     */
     public String getAtaqueEspecial() { return ataqueEspecial; }
     /**
      * Devuelve daño adicional sin exponer directamente el atributo.

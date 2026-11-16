@@ -10,29 +10,11 @@ import com.wachin.interfaces.Atacable;
  * Abstracción de los datos y reglas comunes de los actores; sus campos privados aplican encapsulamiento y las subclases especializan su conducta.
  */
 public abstract class Entidad implements Atacable {
-    /**
-     * Guarda id para que la clase mantenga su estado interno.
-     */
     private int id;
-    /**
-     * Guarda nombre para que la clase mantenga su estado interno.
-     */
     private String nombre;
-    /**
-     * Guarda vida para que la clase mantenga su estado interno.
-     */
     private int vida;
-    /**
-     * Constante que define vidamaxima para este componente.
-     */
     private int vidaMaxima;
-    /**
-     * Guarda dano para que la clase mantenga su estado interno.
-     */
     private int dano;
-    /**
-     * Guarda tipo para que la clase mantenga su estado interno.
-     */
     private String tipo;
 
     /**
@@ -89,13 +71,7 @@ public abstract class Entidad implements Atacable {
         if (valor < 0) throw new DanoInvalidoException("El dano no puede ser negativo.");
     }
 
-    /**
-     * Devuelve identificador sin exponer directamente el atributo.
-     */
     public int getId() { return id; }
-    /**
-     * Devuelve nombre sin exponer directamente el atributo.
-     */
     public String getNombre() { return nombre; }
     /**
      * Devuelve vida actual sin exponer directamente el atributo.
@@ -105,13 +81,7 @@ public abstract class Entidad implements Atacable {
      * Devuelve vida máxima sin exponer directamente el atributo.
      */
     public int getVidaMaxima() { return vidaMaxima; }
-    /**
-     * Devuelve daño sin exponer directamente el atributo.
-     */
     public int getDano() { return dano; }
-    /**
-     * Devuelve tipo sin exponer directamente el atributo.
-     */
     public String getTipo() { return tipo; }
 
     /**

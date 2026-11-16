@@ -52,4 +52,41 @@ public class ColisionServiceTest {
         assertTrue(servicio.colisionaProyectilEnemigo(amigo,
                 42, 200, 42, 200, 22));
     }
+
+    @Test
+    public void entidadesSuperpuestasSeEmpujanEnSentidoContrario() {
+        ColisionService servicio = new ColisionService();
+        var otros = java.util.List.of(new ColisionService.Obstaculo(110, 100, 20));
+        ColisionService.Posicion empuje = servicio.empujeSeparacion(100, 100, 20, otros, 1.0);
+        assertTrue(empuje.x() < 0);
+        assertEquals(0, empuje.y(), 1e-9);
+        assertTrue(Math.hypot(empuje.x(), empuje.y()) <= 1.0);
+    }
+
+    @Test
+    public void sinSuperposicionNoHayEmpuje() {
+        ColisionService servicio = new ColisionService();
+        var otros = java.util.List.of(new ColisionService.Obstaculo(300, 100, 20));
+        ColisionService.Posicion empuje = servicio.empujeSeparacion(100, 100, 20, otros, 1.0);
+        assertEquals(0, empuje.x(), 0.0);
+        assertEquals(0, empuje.y(), 0.0);
+        assertEquals(0, servicio.empujeSeparacion(100, 100, 20, null, 1.0).x(), 0.0);
+    }
+
+    @Test
+    public void posicionesIdenticasSeSeparanSinDividirPorCero() {
+        ColisionService servicio = new ColisionService();
+        var otros = java.util.List.of(new ColisionService.Obstaculo(100, 100, 20));
+        ColisionService.Posicion empuje = servicio.empujeSeparacion(100, 100, 20, otros, 1.0);
+        assertTrue(Double.isFinite(empuje.x()) && Double.isFinite(empuje.y()));
+        assertTrue(Math.hypot(empuje.x(), empuje.y()) > 0);
+    }
+
+    @Test
+    public void unEnemigoNoAtraviesaAOtroAlResolverMovimiento() {
+        ColisionService servicio = new ColisionService();
+        var bloqueo = java.util.List.of(new ColisionService.Obstaculo(200, 100, 22));
+        ColisionService.Posicion destino = servicio.resolverMovimiento(150, 100, 260, 100, 22, bloqueo, 0, 1000, 0, 1000);
+        assertTrue("No debe cruzar al otro enemigo", destino.x() < 200);
+    }
 }

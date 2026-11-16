@@ -2,10 +2,7 @@ package com.wachin.service;
 
 import com.wachin.model.Proyectil;
 
-/** Calcula colisiones entre entidades usando sus recorridos del fotograma. */
-/**
- * Detecta contactos entre entidades comparando sus recorridos en cada fotograma.
- */
+/** Detecta contactos entre entidades comparando sus recorridos en cada fotograma. */
 public final class ColisionService {
     public record Obstaculo(double x, double y, double radio) { }
     public record Posicion(double x, double y) { }
@@ -79,6 +76,35 @@ public final class ColisionService {
         return true;
     }
 
+    /**
+     * Calcula cuánto debe apartarse una entidad de las que se le superponen. Se usa para que los
+     * enemigos se dispersen en lugar de apilarse: el empuje crece con el solapamiento y nunca
+     * supera {@code maximo}, de modo que no hay bloqueos ni tirones.
+     */
+    public Posicion empujeSeparacion(double x, double y, double radio,
+            java.util.List<Obstaculo> otros, double maximo) {
+        double empujeX = 0;
+        double empujeY = 0;
+        if (otros != null) {
+            for (Obstaculo otro : otros) {
+                if (otro == null) continue;
+                double dx = x - otro.x();
+                double dy = y - otro.y();
+                double minimo = (radio + otro.radio()) * 1.1;
+                double d = Math.hypot(dx, dy);
+                if (d >= minimo) continue;
+                if (d < 0.001) { dx = 1; dy = 0; d = 1; }
+                double fuerza = (minimo - d) / minimo;
+                empujeX += dx / d * fuerza;
+                empujeY += dy / d * fuerza;
+            }
+        }
+        double magnitud = Math.hypot(empujeX, empujeY);
+        if (magnitud < 0.0001) return new Posicion(0, 0);
+        double escala = Math.min(maximo, magnitud * maximo) / magnitud;
+        return new Posicion(empujeX * escala, empujeY * escala);
+    }
+
     public boolean colisionaProyectilCirculo(Proyectil proyectil,
             double xAnterior, double yAnterior, double x, double y, double radio) {
         return segmentosSeCruzan(proyectil.getXAnterior(), proyectil.getYAnterior(),
@@ -91,31 +117,13 @@ public final class ColisionService {
      */
     public boolean segmentosSeCruzan(double ax1, double ay1, double ax2, double ay2,
             double bx1, double by1, double bx2, double by2, double radio) {
-        /**
-         * Guarda dx para que la clase mantenga su estado interno.
-         */
         double dx = ax2 - ax1;
-        /**
-         * Guarda dy para que la clase mantenga su estado interno.
-         */
         double dy = ay2 - ay1;
-        /**
-         * Constante que define longitudcuadrada para este componente.
-         */
         double longitudCuadrada = dx * dx + dy * dy;
-        /**
-         * Guarda t para que la clase mantenga su estado interno.
-         */
         double t = longitudCuadrada == 0 ? 0
                 : ((bx2 - ax1) * dx + (by2 - ay1) * dy) / longitudCuadrada;
         t = Math.max(0, Math.min(1, t));
-        /**
-         * Constante que define cercanox para este componente.
-         */
         double cercanoX = ax1 + t * dx;
-        /**
-         * Constante que define cercanoy para este componente.
-         */
         double cercanoY = ay1 + t * dy;
         return Math.hypot(bx2 - cercanoX, by2 - cercanoY) <= radio;
     }

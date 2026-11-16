@@ -11,12 +11,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** DAO general. Guarda los atributos propios del jugador cuando corresponde. */
 /**
  * Implementa EntidadDAO y reconstruye el subtipo de entidad indicado por la base.
  */
 public class EntidadDAOImpl implements EntidadDAO {
+    private static final Logger REGISTRO = Logger.getLogger(EntidadDAOImpl.class.getName());
     @Override
     /**
      * Inserta el estado mediante una consulta parametrizada y cierra los recursos JDBC.
@@ -42,7 +45,7 @@ public class EntidadDAOImpl implements EntidadDAO {
             }
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Error al guardar entidad: " + e.getMessage());
+            REGISTRO.log(Level.WARNING, "Error al guardar entidad", e);
         }
     }
 
@@ -51,9 +54,6 @@ public class EntidadDAOImpl implements EntidadDAO {
      * Consulta por identificador y reconstruye el objeto encontrado.
      */
     public Entidad buscarPorId(int id) {
-        /**
-         * Guarda sql para que la clase mantenga su estado interno.
-         */
         String sql = "SELECT * FROM Entidades WHERE id = ?";
         try (Connection conexion = ConexionBD.conectar(); PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -61,7 +61,7 @@ public class EntidadDAOImpl implements EntidadDAO {
                 if (rs.next()) return convertirEntidad(rs);
             }
         } catch (Exception e) {
-            System.err.println("Error al buscar entidad: " + e.getMessage());
+            REGISTRO.log(Level.WARNING, "Error al buscar entidad", e);
         }
         return null;
     }
@@ -72,9 +72,6 @@ public class EntidadDAOImpl implements EntidadDAO {
      */
     public List<Entidad> listarTodo() {
         List<Entidad> entidades = new ArrayList<>();
-        /**
-         * Guarda sql para que la clase mantenga su estado interno.
-         */
         String sql = "SELECT * FROM Entidades";
         try (Connection conexion = ConexionBD.conectar(); PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -83,7 +80,7 @@ public class EntidadDAOImpl implements EntidadDAO {
                 if (entidad != null) entidades.add(entidad);
             }
         } catch (Exception e) {
-            System.err.println("Error al listar entidades: " + e.getMessage());
+            REGISTRO.log(Level.WARNING, "Error al listar entidades", e);
         }
         return entidades;
     }
@@ -110,7 +107,7 @@ public class EntidadDAOImpl implements EntidadDAO {
                 return new Invocacion(rs.getInt("id"), rs.getString("nombre"), rs.getInt("vida"),
                         rs.getInt("vida_max"), rs.getInt("dano"), 10, 10);
             default:
-                System.err.println("Tipo de entidad desconocido: " + tipo);
+                REGISTRO.warning("Tipo de entidad desconocido: " + tipo);
                 return null;
         }
     }
@@ -121,9 +118,6 @@ public class EntidadDAOImpl implements EntidadDAO {
      */
     public void actualizar(Entidad entidad) {
         if (entidad == null) return;
-        /**
-         * Guarda sql para que la clase mantenga su estado interno.
-         */
         String sql = "UPDATE Entidades SET nombre = ?, vida = ?, vida_max = ?, dano = ?, tipo = ?, experiencia = ?, nivel = ?, monedas = ?, energia = ?, energia_maxima = ? WHERE id = ?";
         try (Connection conexion = ConexionBD.conectar(); PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, entidad.getNombre());
@@ -144,7 +138,7 @@ public class EntidadDAOImpl implements EntidadDAO {
             ps.setInt(11, entidad.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Error al actualizar entidad: " + e.getMessage());
+            REGISTRO.log(Level.WARNING, "Error al actualizar entidad", e);
         }
     }
 
@@ -153,15 +147,12 @@ public class EntidadDAOImpl implements EntidadDAO {
      * Borra el registro identificado mediante una consulta parametrizada.
      */
     public void eliminar(int id) {
-        /**
-         * Guarda sql para que la clase mantenga su estado interno.
-         */
         String sql = "DELETE FROM Entidades WHERE id = ?";
         try (Connection conexion = ConexionBD.conectar(); PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Error al eliminar entidad: " + e.getMessage());
+            REGISTRO.log(Level.WARNING, "Error al eliminar entidad", e);
         }
     }
 }

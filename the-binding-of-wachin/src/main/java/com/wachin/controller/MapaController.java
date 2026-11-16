@@ -20,25 +20,10 @@ public final class MapaController {
      * Agrupa comportamiento y estado propio dentro de la arquitectura del proyecto.
      */
     public static final class SalaNodo {
-        /**
-         * Guarda id para que la clase mantenga su estado interno.
-         */
         private final int id;
-        /**
-         * Guarda profundidad para que la clase mantenga su estado interno.
-         */
         private final int profundidad;
-        /**
-         * Guarda jefe para que la clase mantenga su estado interno.
-         */
         private int numeroGlobal;
-        /**
-         * Guarda mapa para que la clase mantenga su estado interno.
-         */
         private final int mapa;
-        /**
-         * Guarda salidas para que la clase mantenga su estado interno.
-         */
         private final Map<PuertaVisual.Direccion, SalaNodo> salidas =
                 new EnumMap<>(PuertaVisual.Direccion.class);
         private PuertaVisual.Direccion entrada;
@@ -59,16 +44,7 @@ public final class MapaController {
 
     private final Set<Integer> visitadas = new HashSet<>();
     private final ProgresionService progresion;
-    /**
-     * Constante que define siguienteid para este componente.
-     */
     private int siguienteId = 1;
-    /**
-     * Constante que define numerosala para este componente.
-     */
-    /**
-     * Guarda actual para que la clase mantenga su estado interno.
-     */
     private SalaNodo actual;
 
     public MapaController() { this(new ProgresionService()); }
@@ -157,8 +133,8 @@ public final class MapaController {
     private void prepararSalidas(SalaNodo sala, PuertaVisual.Direccion entrada) {
         if (!sala.salidas.isEmpty()) return;
         List<PuertaVisual.Direccion> direcciones = elegirDirecciones(entrada,
-                progresion.esFinDeMapa(sala.numeroGlobal) ? 1 : 2);
-        if (progresion.esFinDeMapa(sala.numeroGlobal)) {
+                ProgresionService.esFinDeMapa(sala.numeroGlobal) ? 1 : 2);
+        if (ProgresionService.esFinDeMapa(sala.numeroGlobal)) {
             sala.salidas.put(direcciones.get(0), crearSalaSiguiente());
         } else {
             for (PuertaVisual.Direccion direccion : direcciones) {

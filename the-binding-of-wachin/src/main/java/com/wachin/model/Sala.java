@@ -9,17 +9,8 @@ import java.util.List;
  */
 public class Sala {
 
-    /**
-     * Guarda numero para que la clase mantenga su estado interno.
-     */
     private final int numero;
-    /**
-     * Guarda dificultad para que la clase mantenga su estado interno.
-     */
     private final int dificultad;
-    /**
-     * Guarda enemigos para que la clase mantenga su estado interno.
-     */
     private final List<Enemigo> enemigos;
 
     /**
@@ -50,16 +41,10 @@ public class Sala {
         return numero;
     }
 
-    /**
-     * Devuelve dificultad sin exponer directamente el atributo.
-     */
     public int getDificultad() {
         return dificultad;
     }
 
-    /**
-     * Devuelve enemigos sin exponer directamente el atributo.
-     */
     public List<Enemigo> getEnemigos() {
         return Collections.unmodifiableList(enemigos);
     }

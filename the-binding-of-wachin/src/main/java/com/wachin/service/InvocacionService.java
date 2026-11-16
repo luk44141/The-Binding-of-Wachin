@@ -47,7 +47,7 @@ public final class InvocacionService {
                 .min(Comparator.comparingDouble(o -> distancia(invocacion.getX(), invocacion.getY(), o.x(), o.y())))
                 .orElse(null);
 
-        double destinoX = jugadorX + (invocacion.getX() < jugadorX ? -48 : 48);
+        double destinoX = jugadorX + (invocacion.getEspacio() == 0 ? -52 : 52);
         double destinoY = jugadorY + 42;
         boolean proteger = false;
         if (tipo == TipoInvocacion.GUSANO && objetivo != null
@@ -118,13 +118,24 @@ public final class InvocacionService {
         return new Actualizacion(invocacion, List.of());
     }
 
+    /**
+     * Mueve la invocación hacia su destino con suavizado: acelera si se quedó lejos del jugador y
+     * frena al llegar, para evitar tirones. No colisiona con nada; solo se la mantiene dentro de la sala.
+     */
     private void mover(Invocacion invocacion, double destinoX, double destinoY, double dt) {
         double dx = destinoX - invocacion.getX();
         double dy = destinoY - invocacion.getY();
         double d = Math.hypot(dx, dy);
         if (d <= 1) return;
-        double paso = Math.min(d, invocacion.getVelocidad() * dt);
-        invocacion.moverA(invocacion.getX() + dx / d * paso, invocacion.getY() + dy / d * paso);
+        double alcance = d > 280 ? 2.4 : d > 140 ? 1.5 : 1.0;
+        double frenado = Math.min(1, d / 36 + 0.2);
+        double paso = Math.min(d, invocacion.getVelocidad() * alcance * frenado * dt);
+        invocacion.moverA(limitar(invocacion.getX() + dx / d * paso, 75, 925),
+                limitar(invocacion.getY() + dy / d * paso, 75, 625));
+    }
+
+    private static double limitar(double valor, double minimo, double maximo) {
+        return Math.max(minimo, Math.min(maximo, valor));
     }
     private double distancia(double x1, double y1, double x2, double y2) { return Math.hypot(x1 - x2, y1 - y2); }
 }

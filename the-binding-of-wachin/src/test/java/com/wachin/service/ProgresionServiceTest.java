@@ -19,7 +19,7 @@ public class ProgresionServiceTest {
     @Test
     public void jefesSeDeterminanPorSalaGlobal() {
         assertEquals(Jefe.Tipo.SALA_10, ProgresionService.jefeDeSala(5));
-        assertEquals(Jefe.Tipo.SALA_10, ProgresionService.jefeDeSala(10));
+        assertEquals(Jefe.Tipo.EMISOR_RAYOS, ProgresionService.jefeDeSala(10));
         assertEquals(Jefe.Tipo.SALA_15, ProgresionService.jefeDeSala(15));
         assertEquals(Jefe.Tipo.SALA_20, ProgresionService.jefeDeSala(20));
         assertNull(ProgresionService.recompensaDeSala(5));
@@ -68,5 +68,30 @@ public class ProgresionServiceTest {
                 assertNotNull(nodo);
             }
         }
+    }
+
+    @Test
+    public void elJefeDeLaSala15EntregaLaEleccionDeCartas() {
+        assertEquals(ProgresionService.Recompensa.AUMENTAR_VIDA_MAXIMA, ProgresionService.recompensaDeSala(10));
+        assertEquals(ProgresionService.Recompensa.ELEGIR_CARTA, ProgresionService.recompensaDeSala(15));
+        assertNull(ProgresionService.recompensaDeSala(5));
+        assertNull(ProgresionService.recompensaDeSala(20));
+    }
+
+    @Test
+    public void soloLaSala20CierraLaProgresion() {
+        assertTrue(ProgresionService.esCierreDeProgresion(20));
+        assertFalse(ProgresionService.esCierreDeProgresion(10));
+        assertFalse(ProgresionService.esCierreDeProgresion(40));
+    }
+
+    @Test
+    public void elJefeConCuernosRegresaCadaVeinteSalas() {
+        assertEquals(Jefe.Tipo.SALA_20, ProgresionService.jefeDeSala(40));
+        assertEquals(Jefe.Tipo.SALA_20, ProgresionService.jefeDeSala(60));
+        assertEquals(Jefe.Tipo.EMISOR_RAYOS, ProgresionService.jefeDeSala(25));
+        assertEquals(Jefe.Tipo.EMISOR_RAYOS, ProgresionService.jefeDeSala(45));
+        assertNull(ProgresionService.jefeDeSala(30));
+        assertNull(ProgresionService.jefeDeSala(35));
     }
 }

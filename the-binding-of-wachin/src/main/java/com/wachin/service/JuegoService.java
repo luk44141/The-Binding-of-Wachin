@@ -13,15 +13,9 @@ import com.wachin.exception.InvocacionNoDisponibleException;
  * Mantiene el estado de juego y administra las entidades activas y sus recompensas.
  */
 public class JuegoService {
-    /**
-     * Guarda jugador para que la clase mantenga su estado interno.
-     */
     private Jugador jugador;
     private final List<Enemigo> enemigos = new ArrayList<>();
     private final List<Invocacion> invocacionesActivas = new ArrayList<>();
-    /**
-     * Guarda jefe para que la clase mantenga su estado interno.
-     */
     private Jefe jefe;
 
     /**
@@ -35,21 +29,12 @@ public class JuegoService {
         jefe = null;
     }
 
-    /**
-     * Devuelve jugador sin exponer directamente el atributo.
-     */
     public Jugador getJugador() { return jugador; }
-    /**
-     * Devuelve enemigos sin exponer directamente el atributo.
-     */
     public List<Enemigo> getEnemigos() { return enemigos; }
     /**
      * Devuelve invocaciones activas sin exponer directamente el atributo.
      */
     public List<Invocacion> getInvocacionesActivas() { return Collections.unmodifiableList(invocacionesActivas); }
-    /**
-     * Devuelve jefe sin exponer directamente el atributo.
-     */
     public Jefe getJefe() { return jefe; }
 
     /**

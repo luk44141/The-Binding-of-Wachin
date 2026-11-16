@@ -9,17 +9,8 @@ import java.sql.SQLException;
  */
 public class ConexionBD {
 
-    /**
-     * Constante que define url para este componente.
-     */
     private static final String URL = "jdbc:mysql://localhost:3306/the_binding_of_wachin";
-    /**
-     * Constante que define usuario para este componente.
-     */
     private static final String USUARIO = "root";
-    /**
-     * Constante que define password para este componente.
-     */
     private static final String PASSWORD = "";
 
     /**

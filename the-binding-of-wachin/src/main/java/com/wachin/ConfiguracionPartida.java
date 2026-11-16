@@ -13,13 +13,7 @@ public final class ConfiguracionPartida {
         WACHIN("Wachin", "assets/images/player/wachin.png"),
         WACHINA("Wachina", "assets/images/player/wachina.png");
 
-        /**
-         * Guarda nombre para que la clase mantenga su estado interno.
-         */
         private final String nombre;
-        /**
-         * Guarda ruta para que la clase mantenga su estado interno.
-         */
         private final String ruta;
 
         Personaje(String nombre, String ruta) {
@@ -39,13 +33,7 @@ public final class ConfiguracionPartida {
         LAGRIMA("Lagrima", "assets/images/projectiles/lagrima.png"),
         GOTA("Gota", "assets/images/projectiles/gota.png");
 
-        /**
-         * Guarda nombre para que la clase mantenga su estado interno.
-         */
         private final String nombre;
-        /**
-         * Guarda ruta para que la clase mantenga su estado interno.
-         */
         private final String ruta;
 
         TipoProyectil(String nombre, String ruta) {
@@ -58,13 +46,7 @@ public final class ConfiguracionPartida {
         @Override public String toString() { return nombre; }
     }
 
-    /**
-     * Guarda personaje para que la clase mantenga su estado interno.
-     */
     private final Personaje personaje;
-    /**
-     * Constante que define tipoproyectil para este componente.
-     */
     private final TipoProyectil tipoProyectil;
 
     /**

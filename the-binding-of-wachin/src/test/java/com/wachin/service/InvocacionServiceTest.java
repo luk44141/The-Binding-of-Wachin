@@ -64,4 +64,33 @@ public class InvocacionServiceTest {
         assertEquals(Invocacion.Estado.RECUPERANDO, robot.getEstado());
         assertTrue(robot.getEnergia() > 10);
     }
+
+    @Test
+    public void lasInvocacionesSeColocanAAmbosLadosSegunSuRanura() throws Exception {
+        InvocacionService servicio = new InvocacionService();
+        com.wachin.model.Jugador jugador = new com.wachin.model.Jugador("Wachin", 100, 25, 100);
+        com.wachin.model.Invocacion izquierda = servicio.crear(com.wachin.model.TipoInvocacion.GUSANO);
+        com.wachin.model.Invocacion derecha = servicio.crear(com.wachin.model.TipoInvocacion.ROBOT);
+        izquierda.setEspacio(0);
+        derecha.setEspacio(1);
+        izquierda.moverA(500, 400);
+        derecha.moverA(500, 400);
+        for (int i = 0; i < 200; i++) {
+            servicio.actualizar(izquierda, jugador, 500, 350, java.util.List.of(), 0.05);
+            servicio.actualizar(derecha, jugador, 500, 350, java.util.List.of(), 0.05);
+        }
+        assertTrue(izquierda.getX() < 500);
+        assertTrue(derecha.getX() > 500);
+    }
+
+    @Test
+    public void unaInvocacionLejanaAlcanzaAlJugadorSinAtravesarLosLimitesDeLaSala() throws Exception {
+        InvocacionService servicio = new InvocacionService();
+        com.wachin.model.Jugador jugador = new com.wachin.model.Jugador("Wachin", 100, 25, 100);
+        com.wachin.model.Invocacion bat = servicio.crear(com.wachin.model.TipoInvocacion.MURCIELAGO);
+        bat.moverA(100, 100);
+        for (int i = 0; i < 200; i++) servicio.actualizar(bat, jugador, 900, 600, java.util.List.of(), 0.05);
+        assertTrue(Math.hypot(bat.getX() - 900, bat.getY() - 600) < 120);
+        assertTrue(bat.getX() >= 75 && bat.getX() <= 925 && bat.getY() >= 75 && bat.getY() <= 625);
+    }
 }
