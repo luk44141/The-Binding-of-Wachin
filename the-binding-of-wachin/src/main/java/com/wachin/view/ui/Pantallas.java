@@ -252,11 +252,11 @@ public final class Pantallas {
     public static PantallaModal victoria(EstadisticasPartida estadisticas, int sala, int nivel,
             Runnable alSeguir, Runnable alMenu) {
         PantallaModal pantalla = new PantallaModal(W, H, "panel-modal-oro");
-        Label titulo = PantallaModal.titulo("¡VICTORIA!");
+        Label titulo = PantallaModal.titulo("MODO HARDCORE");
         titulo.setStyle("-fx-text-fill: #ffd873; -fx-font-size: 54px; -fx-effect: dropshadow(gaussian, rgba(255,216,115,0.8), 26, 0.3, 0, 0);");
-        pantalla.agregar(titulo, PantallaModal.subtitulo("Derrotaste al jefe de la sala 20. La profundidad todavía "
-                + "guarda más desafíos si querés seguir."), resumen(estadisticas, sala, nivel),
-                PantallaModal.boton("SEGUIR EXPLORANDO", "btn-primario", alSeguir),
+        pantalla.agregar(titulo, PantallaModal.subtitulo("Superaste la sala 20. A partir de ahora, cualquier impacto de un enemigo te elimina. "
+                + "La exploración continúa con dificultad extrema."), resumen(estadisticas, sala, nivel),
+                PantallaModal.boton("ACTIVAR MODO HARDCORE", "btn-primario", alSeguir),
                 PantallaModal.boton("VOLVER AL MENÚ", null, alMenu));
         return pantalla;
     }

@@ -189,7 +189,12 @@ final class SalaController {
                     ctx.efectos.nivelSubido(ctx.x, ctx.y, ctx.jugador().getNivel());
                     ctx.vista.mostrarAviso("¡Nivel " + ctx.jugador().getNivel()
                             + "! Vida completa y vida máxima +10", Tono.ESPECIAL);
-                    objetos.mostrarSeleccionCartasPorNivel();
+                    // La sala 20 abre el modal de transición a hardcore en este mismo ciclo.
+                    // Evitamos superponerle la selección de cartas, que dejaría la partida marcada
+                    // como cartaPendiente y bloquearía ESC después de cerrar la victoria.
+                    if (!ProgresionService.esCierreDeProgresion(sala)) {
+                        objetos.mostrarSeleccionCartasPorNivel();
+                    }
                 } else {
                     ctx.vista.mostrarAviso("+50 EXP", Tono.BUENO);
                 }

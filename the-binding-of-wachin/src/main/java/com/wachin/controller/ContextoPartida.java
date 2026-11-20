@@ -76,6 +76,8 @@ final class ContextoPartida {
     double invulnerable;
 
     boolean puertasAbiertas;
+    /** Se activa al superar la sala 20; cualquier impacto enemigo elimina al jugador. */
+    boolean modoHardcore;
     boolean terminado;
     boolean pausado;
     boolean enTransicion;

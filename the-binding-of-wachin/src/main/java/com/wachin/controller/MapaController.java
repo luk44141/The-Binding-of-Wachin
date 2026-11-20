@@ -121,8 +121,7 @@ public final class MapaController {
      * Asigna un identificador y crea un nodo con mapa, profundidad y tipo.
      */
     private SalaNodo crearSala(int numeroGlobal, int profundidad, int mapa) {
-        siguienteId = Math.max(siguienteId, numeroGlobal + 1);
-        SalaNodo sala = new SalaNodo(numeroGlobal, profundidad, mapa);
+        SalaNodo sala = new SalaNodo(siguienteId++, profundidad, mapa);
         sala.numeroGlobal = numeroGlobal;
         return sala;
     }
