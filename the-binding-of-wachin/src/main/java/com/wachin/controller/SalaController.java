@@ -177,7 +177,6 @@ final class SalaController {
 
     /** Genera la carta de las salas pares, abre las puertas al limpiar y detecta el cierre de la progresión. */
     Resultado comprobarSala() {
-        if (ctx.cartaPendiente) return Resultado.NINGUNO;
         MapaController.SalaNodo nodo = ctx.mapa.getActual();
         int sala = ctx.mapa.getNumeroSala();
         boolean limpia = ctx.enemigos.isEmpty();
@@ -198,7 +197,12 @@ final class SalaController {
             ctx.vista.configurarSalidas(nodo.getDireccionesSalida(), nodo.getDireccionEntrada(), true);
             ctx.efectos.puertasAbiertas();
             ctx.vista.mostrarAviso(nodo.esJefe() ? "Jefe derrotado" : "Sala limpia", Tono.BUENO);
-            if (nodo.esJefe() && ProgresionService.esCierreDeProgresion(sala)) resultado = Resultado.VICTORIA;
+        }
+        // Si al limpiar la sala se abrio una seleccion de carta por subir de nivel,
+        // la victoria se muestra despues de que el jugador cierre esa seleccion.
+        if (!ctx.cartaPendiente && limpia && ctx.puertasAbiertas && nodo.esJefe()
+                && ProgresionService.esCierreDeProgresion(sala)) {
+            resultado = Resultado.VICTORIA;
         }
         ctx.vista.fijarObjetivo(limpia
                 ? (nodo.esJefe() ? "Jefe derrotado · elegí la salida" : "Sala limpia · elegí una puerta")

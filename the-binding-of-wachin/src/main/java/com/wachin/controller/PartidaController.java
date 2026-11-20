@@ -213,7 +213,9 @@ public final class PartidaController {
         jugador.limpiarTeclas();
         ctx.efectos.sonar(SonidoService.Efecto.VICTORIA);
         vista.mostrarPantalla(Pantallas.victoria(ctx.estadisticas, ctx.mapa.getNumeroSala(), ctx.jugador().getNivel(),
-                () -> { ctx.pausado = false; vista.ocultarPantalla(); }, this::salirAlMenu));
+                () -> { ctx.modoHardcore = true; ctx.pausado = false; vista.ocultarPantalla();
+                    vista.mostrarAviso("MODO HARDCORE ACTIVADO: cualquier golpe te elimina",
+                            com.wachin.view.game.HudView.Tono.MALO); }, this::salirAlMenu));
     }
 
     private void actualizarHud() {

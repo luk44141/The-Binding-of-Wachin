@@ -80,6 +80,7 @@ final class ContextoPartida {
     boolean pausado;
     boolean enTransicion;
     boolean cartaPendiente;
+    boolean modoHardcore;
     boolean debeAlejarseAntesDeRecoger;
     ObjetoSuelo invocacionPendiente;
     /** Suelta las teclas pulsadas; se invoca al abrir una pantalla modal. */

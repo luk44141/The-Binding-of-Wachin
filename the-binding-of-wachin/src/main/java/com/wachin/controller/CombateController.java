@@ -114,8 +114,9 @@ final class CombateController {
     void recibirDanoJugador(int danoBase) {
         Jugador jugador = ctx.jugador();
         if (jugador == null) return;
-        int dano = ctx.combate.calcularDanoRecibido(danoBase, ctx.mapa.getActual().getMapa(),
-                ctx.mapa.getActual().getProfundidad());
+        int dano = ctx.modoHardcore ? Math.max(jugador.getVida(), jugador.getVidaMaxima())
+                : ctx.combate.calcularDanoRecibido(danoBase, ctx.mapa.getActual().getMapa(),
+                        ctx.mapa.getActual().getProfundidad());
         try {
             ctx.combate.aplicarDano(dano, jugador);
         } catch (DanoInvalidoException e) {

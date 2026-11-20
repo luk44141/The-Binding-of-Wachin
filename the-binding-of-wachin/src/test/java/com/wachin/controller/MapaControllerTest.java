@@ -19,7 +19,6 @@ public class MapaControllerTest {
         for (int salaGlobal = 1; salaGlobal <= 20; salaGlobal++) {
             ProgresionService.UbicacionSala ubicacion = ProgresionService.ubicacionDeSala(salaGlobal);
             assertEquals(salaGlobal, mapa.getNumeroSala());
-            assertEquals(salaGlobal, actual.getId());
             assertEquals(ubicacion.mapa(), actual.getMapa());
             assertEquals(ubicacion.profundidad(), actual.getProfundidad());
             assertEquals(salaGlobal % 5 == 0, actual.esJefe());
@@ -40,6 +39,22 @@ public class MapaControllerTest {
                 assertNotNull(actual);
             }
         }
+    }
+
+
+    @Test
+    public void lasDosSalidasDeUnaSalaTienenIdentificadoresUnicos() {
+        MapaController mapa = new MapaController(new ProgresionService());
+        MapaController.SalaNodo sala = mapa.iniciar();
+        assertEquals(2, sala.getDireccionesSalida().size());
+        var direcciones = sala.getDireccionesSalida().iterator();
+        MapaController.SalaNodo primero = mapa.getDestino(direcciones.next());
+        MapaController.SalaNodo segundo = mapa.getDestino(direcciones.next());
+        assertNotNull(primero);
+        assertNotNull(segundo);
+        assertTrue(primero.getId() != segundo.getId());
+        assertEquals(2, primero.getNumeroGlobal());
+        assertEquals(2, segundo.getNumeroGlobal());
     }
 
     @Test

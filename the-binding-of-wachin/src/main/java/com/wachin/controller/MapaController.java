@@ -80,7 +80,7 @@ public final class MapaController {
         }
         progresion.restaurarNumeroSalaGlobal(numeroGlobal);
         siguienteId = numeroGlobal + 1;
-        SalaNodo sala = new SalaNodo(numeroGlobal, profundidad, mapa);
+        SalaNodo sala = new SalaNodo(siguienteId++, profundidad, mapa);
         sala.numeroGlobal = numeroGlobal;
         sala.entrada = entrada;
         actual = sala;
@@ -122,7 +122,7 @@ public final class MapaController {
      */
     private SalaNodo crearSala(int numeroGlobal, int profundidad, int mapa) {
         siguienteId = Math.max(siguienteId, numeroGlobal + 1);
-        SalaNodo sala = new SalaNodo(numeroGlobal, profundidad, mapa);
+        SalaNodo sala = new SalaNodo(siguienteId++, profundidad, mapa);
         sala.numeroGlobal = numeroGlobal;
         return sala;
     }
